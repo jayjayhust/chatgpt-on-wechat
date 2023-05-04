@@ -25,6 +25,8 @@ from lib import itchat
 from lib.itchat.content import *
 from plugins import *
 
+from communication.mqtt_client import mqtt_client
+
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
@@ -100,13 +102,15 @@ def qrCallback(uuid, status, qrcode):
         qr.print_ascii(invert=True)
 
 
+# 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
 @singleton
-class WechatChannel(ChatChannel):
+class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
     NOT_SUPPORT_REPLYTYPE = []
 
     def __init__(self):
         super().__init__()
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)
+        self.mqtt_client_inst = mqtt_client(conf().get("mqtt_url", "127.0.0.1"), conf().get("mqtt_port", 1883), 600)
 
     def startup(self):
         itchat.instance.receivingRetryCount = 600  # 修改断线超时时间
@@ -139,7 +143,7 @@ class WechatChannel(ChatChannel):
 
     @time_checker
     @_check
-    def handle_single(self, cmsg: ChatMessage):
+    def handle_single(self, cmsg: ChatMessage):  # 没有self参数，不是实例方法，是类方法
         if cmsg.ctype == ContextType.VOICE:
             if conf().get("speech_recognition") != True:
                 return
@@ -154,11 +158,11 @@ class WechatChannel(ChatChannel):
             logger.debug("[WX]receive msg: {}, cmsg={}".format(cmsg.content, cmsg))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=False, msg=cmsg)
         if context:
-            self.produce(context)
+            self.produce(context)  # 调用父类的produce()方法
 
     @time_checker
     @_check
-    def handle_group(self, cmsg: ChatMessage):
+    def handle_group(self, cmsg: ChatMessage):  # 没有self参数，不是实例方法，是类方法
         if cmsg.ctype == ContextType.VOICE:
             if conf().get("speech_recognition") != True:
                 return
@@ -168,13 +172,13 @@ class WechatChannel(ChatChannel):
         elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
-            # logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
             pass
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)
         if context:
-            self.produce(context)
+            self.produce(context)  # 调用父类的produce()方法
 
     # 统一的发送函数，每个Channel自行实现，根据reply的type字段发送不同类型的消息
     def send(self, reply: Reply, context: Context):
