@@ -2,7 +2,7 @@
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 from paho.mqtt.client import MQTTv31, MQTTv311, MQTTv5
 
-bot_name = "bot_0731_287"
+bot_name = "bot_0731_287"  # shall enhance this logic later(maybe move it to config.json)
 
 class mqtt_client(object):
  
@@ -21,7 +21,7 @@ class mqtt_client(object):
         # 订阅
         # client.subscribe("mqtt11")
         # 发布上线消息
-        client.publish("/chatgpt/groupchat/+/status", "{""status"": ""online""}")
+        client.publish(f"/chatgpt/groupchat/{bot_name}/status", "{""status"": ""online""}")
  
     def on_message(self, client, userdata, msg):
         print("on_message topic:" + msg.topic + " message:" + str(msg.payload.decode('utf-8')))
