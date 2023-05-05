@@ -110,7 +110,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
     def __init__(self):
         super().__init__()
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)
-        self.mqtt_client_inst = mqtt_client(conf().get("mqtt_url", "127.0.0.1"), conf().get("mqtt_port", 1883), 600)
+        self.mqtt_client_inst = mqtt_client(conf().get("mqtt_url", "127.0.0.1"), conf().get("mqtt_port", 1883), conf().get("mqtt_username", "admin"), conf().get("mqtt_password", "admin"), 600)
 
     def startup(self):
         itchat.instance.receivingRetryCount = 600  # 修改断线超时时间
