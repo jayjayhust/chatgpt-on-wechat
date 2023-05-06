@@ -148,32 +148,17 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             if conf().get("speech_recognition") != True:
                 return
             logger.debug("[WX]receive voice msg: {}".format(cmsg.content))
-            dict1 = dict()
-            dict1['is_group'] = 'false'
-            dict1['message_type'] = 'VOICE'
-            dict1['message'] = cmsg.content  # 语音文件名
-            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.IMAGE:
             logger.debug("[WX]receive image msg: {}".format(cmsg.content))
-            dict1 = dict()
-            dict1['is_group'] = 'false'
-            dict1['message_type'] = 'IMAGE'
-            dict1['message'] = cmsg.content  # 图像文件名
-            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.PATPAT:
             logger.debug("[WX]receive patpat msg: {}".format(cmsg.content))
-            dict1 = dict()
-            dict1['is_group'] = 'false'
-            dict1['message_type'] = 'PATPAT'
-            dict1['message'] = cmsg.content
-            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive text msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
-            dict1 = dict()
-            dict1['is_group'] = 'false'
-            dict1['message_type'] = 'TEXT'  # 文本内容
-            dict1['message'] = json.dumps(cmsg._rawmsg, ensure_ascii=False)
-            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+            # dict1 = dict()
+            # dict1['is_group'] = 'false'
+            # dict1['message_type'] = 'TEXT'  # 文本内容
+            # dict1['message'] = json.dumps(cmsg._rawmsg, ensure_ascii=False)
+            # self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         else:
             logger.debug("[WX]receive msg: {}, cmsg={}".format(cmsg.content, cmsg))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=False, msg=cmsg)

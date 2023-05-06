@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import threading
@@ -15,6 +16,7 @@ from plugins import *
 
 from communication.mqtt_client import mqtt_client
 import base64  # 二进制方式打开图片文件
+import hashlib # 导入hashlib模块
 
 
 try:
@@ -22,6 +24,7 @@ try:
 except Exception as e:
     pass
 
+md = hashlib.md5() # 获取一个md5加密算法对象
 
 # 抽象类, 它包含了与消息通道无关的通用处理逻辑
 class ChatChannel(Channel):
@@ -103,6 +106,22 @@ class ChatChannel(Channel):
                 return None
 
             if context.get("isgroup", False):  # 群聊
+                # 记录所有的群聊文本信息(有个问题就是自己发送的信息，即使加了@，也不会被认为is_at是true!!!)
+                dict1 = {}
+                dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                dict1['group_chat_id'] = context["msg"].other_user_id
+                dict1['msg_type'] = ContextType.TEXT # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
+                # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                dict1['user_id'] = context["msg"].actual_user_id
+                dict1['is_at'] = context["msg"].is_at
+                dict1['at_user_name'] = context["msg"].to_user_nickname
+                dict1['at_user_id'] = context["msg"].to_user_id
+                dict1['user_message'] = context["content"]
+                dict1['create_time'] = context["msg"].create_time
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+
                 # 校验关键字
                 match_prefix = check_prefix(content, conf().get("group_chat_prefix"))
                 match_contain = check_contain(content, conf().get("group_chat_keyword"))
@@ -172,7 +191,7 @@ class ChatChannel(Channel):
         if not e_context.is_pass():
             logger.debug("[WX] ready to handle context: type={}, content={}".format(context.type, context.content))
             if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字消息和创建图片的消息
-                reply = super().build_reply_content(context.content, context)
+                reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器
             elif context.type == ContextType.VOICE:  # 语音消息
                 cmsg = context["msg"]
                 cmsg.prepare()
@@ -194,6 +213,23 @@ class ChatChannel(Channel):
                 except Exception as e:
                     pass
                     # logger.warning("[WX]delete temp file error: " + str(e))
+                if context.get("isgroup", False):  # 群聊
+                    # 将语音识别结果的文本记录通过MQTT发送给记录服务器
+                    # 记录所有的群聊文本信息
+                    dict1 = {}
+                    dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                    dict1['group_chat_id'] = context["msg"].other_user_id
+                    dict1['msg_type'] = ContextType.VOICE # 1是文本，3是图片，34是语音，43是视频，49是文件，10000是系统提示
+                    dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                    # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
+                    # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                    dict1['user_id'] = context["msg"].actual_user_id
+                    dict1['is_at'] = context["msg"].is_at
+                    dict1['at_user_name'] = context["msg"].to_user_nickname
+                    dict1['at_user_id'] = context["msg"].to_user_id
+                    dict1['user_message'] = context["content"]
+                    dict1['create_time'] = context["msg"].create_time
+                    self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
 
                 if reply.type == ReplyType.TEXT:
                     new_context = self._compose_context(ContextType.TEXT, reply.content, **context.kwargs)
@@ -203,18 +239,34 @@ class ChatChannel(Channel):
                         return
             elif context.type == ContextType.IMAGE:  # 图片消息，当前无默认逻辑，后续把图片都发给服务器作为存档，以便建立图文存档
                 # pass
-                # 1. 获取图片文件地址
-                cmsg = context["msg"]
-                cmsg.prepare()
-                file_path = context.content  # 获取图片文件地址
-                logger.debug('image path: ' + file_path)
-                # 2. 按照图片文件路径读取图片，转码成BASE64
-                # cmsg = context["msg"]
-                # cmsg.prepare()
-                with open(file_path, "rb") as f:  # 转为二进制格式
-                    base64_data = base64.b64encode(f.read())  # 使用base64进行加密
-                    logger.debug(base64_data)
-                # 3. 通过MQTT将图片发送给数据接收服务器
+                if context.get("isgroup", False):  # 群聊
+                    # 1. 获取图片文件地址
+                    cmsg = context["msg"]
+                    cmsg.prepare()
+                    file_path = context.content  # 获取图片文件地址
+                    logger.debug('image path: ' + file_path)
+                    # 2. 按照图片文件路径读取图片，转码成BASE64
+                    with open(file_path, "rb") as f:  # 转为二进制格式
+                        base64_data = base64.b64encode(f.read())  # 使用base64进行加密，输出为bytes
+                        str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
+                        logger.debug(str_base64)
+                        # 3. 通过MQTT将图片发送给数据接收服务器
+                        dict1 = dict()
+                        dict1 = {}
+                        dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                        dict1['group_chat_id'] = context["msg"].other_user_id
+                        dict1['msg_type'] = ContextType.IMAGE # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                        dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                        # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
+                        # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                        dict1['user_id'] = context["msg"].actual_user_id
+                        dict1['is_at'] = context["msg"].is_at
+                        dict1['at_user_name'] = context["msg"].to_user_nickname
+                        dict1['at_user_id'] = context["msg"].to_user_id
+                        dict1['user_message'] = str_base64  # 图片，转码成BASE64
+                        dict1['create_time'] = context["msg"].create_time
+                        self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+
                 pass
                 # 4. 删除临时图片文件
                 try:
