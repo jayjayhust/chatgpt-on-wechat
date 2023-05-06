@@ -13,6 +13,7 @@ from common.log import logger
 from config import conf
 from plugins import *
 
+from communication.mqtt_client import mqtt_client
 import base64  # 二进制方式打开图片文件
 
 
@@ -32,6 +33,11 @@ class ChatChannel(Channel):
     handler_pool = ThreadPoolExecutor(max_workers=8)  # 处理消息的线程池
 
     def __init__(self):
+        self.mqtt_client_inst = mqtt_client(conf().get("mqtt_url", "127.0.0.1"), 
+                                            conf().get("mqtt_port", 1883), 
+                                            conf().get("mqtt_username", "admin"), 
+                                            conf().get("mqtt_password", "admin"), 
+                                            600)
         _thread = threading.Thread(target=self.consume)
         _thread.setDaemon(True)
         _thread.start()
