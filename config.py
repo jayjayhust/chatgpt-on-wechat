@@ -19,6 +19,7 @@ available_setting = {
     "mqtt_port": 1883,  # mqtt服务器端口
     "mqtt_username": "admin",  # mqtt服务器用户名
     "mqtt_password": "admin",  # mqtt服务器密码
+    "bot_id": "bot_test",  # 机器人名称
     # chatgpt模型， 当use_azure_chatgpt为true时，其名称为Azure上model deployment名称
     "model": "gpt-3.5-turbo",
     "use_azure_chatgpt": False,  # 是否使用azure的chatgpt

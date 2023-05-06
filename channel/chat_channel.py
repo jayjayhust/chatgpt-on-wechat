@@ -13,6 +13,9 @@ from common.log import logger
 from config import conf
 from plugins import *
 
+import base64  # 二进制方式打开图片文件
+
+
 try:
     from voice.audio_convert import any_to_wav
 except Exception as e:
@@ -151,6 +154,7 @@ class ChatChannel(Channel):
         # reply的发送步骤
         self._send_reply(context, reply)
 
+    # 处理消息，并产生回复
     def _generate_reply(self, context: Context, reply: Reply = Reply()) -> Reply:
         e_context = PluginManager().emit_event(
             EventContext(
@@ -161,20 +165,21 @@ class ChatChannel(Channel):
         reply = e_context["reply"]
         if not e_context.is_pass():
             logger.debug("[WX] ready to handle context: type={}, content={}".format(context.type, context.content))
-            if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字和图片消息
+            if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字消息和创建图片的消息
                 reply = super().build_reply_content(context.content, context)
             elif context.type == ContextType.VOICE:  # 语音消息
                 cmsg = context["msg"]
                 cmsg.prepare()
-                file_path = context.content
-                wav_path = os.path.splitext(file_path)[0] + ".wav"
+                file_path = context.content  # 获取音频文件地址
+                wav_path = os.path.splitext(file_path)[0] + ".wav"  # 在音频文件同目录下，创建同名的wav后缀文件名
                 try:
-                    any_to_wav(file_path, wav_path)
+                    any_to_wav(file_path, wav_path)  # 将原始音频文件转换为wav文件
                 except Exception as e:  # 转换失败，直接使用mp3，对于某些api，mp3也可以识别
                     logger.warning("[WX]any to wav error, use raw path. " + str(e))
                     wav_path = file_path
                 # 语音识别
-                reply = super().build_voice_to_text(wav_path)
+                reply = super().build_voice_to_text(wav_path)  # 语音转文本
+                logger.debug("voice recognize result: " + reply)
                 # 删除临时文件
                 try:
                     os.remove(file_path)
@@ -190,8 +195,28 @@ class ChatChannel(Channel):
                         reply = self._generate_reply(new_context)
                     else:
                         return
-            elif context.type == ContextType.IMAGE:  # 图片消息，当前无默认逻辑
+            elif context.type == ContextType.IMAGE:  # 图片消息，当前无默认逻辑，后续把图片都发给服务器作为存档，以便建立图文存档
+                # pass
+                # 1. 获取图片文件地址
+                cmsg = context["msg"]
+                cmsg.prepare()
+                file_path = context.content  # 获取图片文件地址
+                logger.debug('image path: ' + file_path)
+                # 2. 按照图片文件路径读取图片，转码成BASE64
+                # cmsg = context["msg"]
+                # cmsg.prepare()
+                with open(file_path, "rb") as f:  # 转为二进制格式
+                    base64_data = base64.b64encode(f.read())  # 使用base64进行加密
+                    logger.debug(base64_data)
+                # 3. 通过MQTT将图片发送给数据接收服务器
                 pass
+                # 4. 删除临时图片文件
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    pass
+                    # logger.warning("[WX]delete temp file error: " + str(e))
+                return
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return

@@ -3,13 +3,13 @@ import paho.mqtt.client as mqtt # pip install paho-mqtt
 from paho.mqtt.client import MQTTv31, MQTTv311, MQTTv5
 
 from common.log import logger
-
-bot_name = "bot_0731_287"  # shall enhance this logic later(maybe move it to config.json)
+from config import conf
 
 class mqtt_client(object):
  
     def __init__(self, mqtt_host, mqtt_port, mqtt_username, mqtt_password, mqtt_keepalive):
         super(mqtt_client, self).__init__()
+        self.bot_id = conf().get("bot_id", "bot")
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -23,8 +23,8 @@ class mqtt_client(object):
         logger.debug("Connected with result code: " + str(rc))
         # 订阅
         # client.subscribe("mqtt11")
-        # 发布上线消息
-        client.publish(f"/chatgpt/groupchat/{bot_name}/status", "{'status'': 'online'}")
+        # 发布机器人上线消息
+        client.publish(f"/chatgpt/groupchat/{self.bot_id}/status", "{'status'': 'online', 'bot_id': '" + self.bot_id + "'}")
  
     def on_message(self, client, userdata, msg):
         logger.debug("on_message topic:" + msg.topic + " message:" + str(msg.payload.decode('utf-8')))

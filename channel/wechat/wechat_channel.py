@@ -31,7 +31,9 @@ from communication.mqtt_client import mqtt_client
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
     try:
-        cmsg = WechatMessage(msg, False)
+        # filename = msg['FileName']
+        # msg['Text'](filename)  # 下载图片(https://blog.csdn.net/tustzhoujian/article/details/81780298)
+        cmsg = WechatMessage(msg, False)  # 原则上不用上面两行刻意去下载VOICE/PICTURE，在WechatMessage的构造函数里面实现了资源的下载
     except NotImplementedError as e:
         logger.debug("[WX]single message {} skipped: {}".format(msg["MsgId"], e))
         return None
@@ -110,6 +112,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
     def __init__(self):
         super().__init__()
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)
+        self.bot_id = conf().get("bot_id", "bot")
         self.mqtt_client_inst = mqtt_client(conf().get("mqtt_url", "127.0.0.1"), conf().get("mqtt_port", 1883), conf().get("mqtt_username", "admin"), conf().get("mqtt_password", "admin"), 600)
 
     def startup(self):
@@ -148,12 +151,32 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             if conf().get("speech_recognition") != True:
                 return
             logger.debug("[WX]receive voice msg: {}".format(cmsg.content))
+            dict1 = dict()
+            dict1['is_group'] = 'false'
+            dict1['message_type'] = 'VOICE'
+            dict1['message'] = cmsg.content  # 语音文件名
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.IMAGE:
             logger.debug("[WX]receive image msg: {}".format(cmsg.content))
+            dict1 = dict()
+            dict1['is_group'] = 'false'
+            dict1['message_type'] = 'IMAGE'
+            dict1['message'] = cmsg.content  # 图像文件名
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.PATPAT:
             logger.debug("[WX]receive patpat msg: {}".format(cmsg.content))
+            dict1 = dict()
+            dict1['is_group'] = 'false'
+            dict1['message_type'] = 'PATPAT'
+            dict1['message'] = cmsg.content
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive text msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            dict1 = dict()
+            dict1['is_group'] = 'false'
+            dict1['message_type'] = 'TEXT'  # 文本内容
+            dict1['message'] = json.dumps(cmsg._rawmsg, ensure_ascii=False)
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         else:
             logger.debug("[WX]receive msg: {}, cmsg={}".format(cmsg.content, cmsg))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=False, msg=cmsg)
@@ -167,12 +190,30 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             if conf().get("speech_recognition") != True:
                 return
             logger.debug("[WX]receive voice for group msg: {}".format(cmsg.content))
+            dict1 = dict()
+            dict1['is_group'] = 'true'
+            dict1['message_type'] = 'VOICE'
+            dict1['message'] = cmsg.content  # 语音文件名
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.IMAGE:
             logger.debug("[WX]receive image for group msg: {}".format(cmsg.content))
+            dict1['is_group'] = 'true'
+            dict1['message_type'] = 'IMAGE'
+            dict1['message'] = cmsg.content  # 图像文件名
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
+            dict1['is_group'] = 'true'
+            dict1['message_type'] = 'PATPAT'
+            dict1['message'] = cmsg.content  # 
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            dict1 = dict()
+            dict1['is_group'] = 'true'
+            dict1['message_type'] = 'TEXT'  # 文本内容
+            dict1['message'] = json.dumps(cmsg._rawmsg, ensure_ascii=False)
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
             pass
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))
