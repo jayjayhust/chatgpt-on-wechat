@@ -18,6 +18,10 @@ class WechatMessage(ChatMessage):
         if itchat_msg["Type"] == TEXT:
             self.ctype = ContextType.TEXT
             self.content = itchat_msg["Text"]
+        elif itchat_msg["Type"] == SHARING:
+            self.ctype = ContextType.SHARING
+            # 链接内容也分为微信文章类的链接、小程序链接等
+            self.content = itchat_msg["Url"]
         elif itchat_msg["Type"] == VOICE:
             self.ctype = ContextType.VOICE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径

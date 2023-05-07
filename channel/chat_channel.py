@@ -101,6 +101,7 @@ class ChatChannel(Channel):
 
         # 消息内容匹配过程，并处理content
         if ctype == ContextType.TEXT:
+            # "」\n- - - - - - - - - - - - - - -\n"this is the qutation in a massage
             if first_in and "」\n- - - - - - -" in content:  # 初次匹配 过滤引用消息
                 logger.debug("[WX]reference query skipped")
                 return None
@@ -110,17 +111,17 @@ class ChatChannel(Channel):
                 dict1 = {}
                 dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
                 dict1['group_chat_id'] = context["msg"].other_user_id
-                dict1['msg_type'] = ContextType.TEXT # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
-                dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
-                # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
-                # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                dict1['msg_type'] = 'TEXT'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
                 dict1['user_id'] = context["msg"].actual_user_id
                 dict1['is_at'] = context["msg"].is_at
                 dict1['at_user_name'] = context["msg"].to_user_nickname
                 dict1['at_user_id'] = context["msg"].to_user_id
                 dict1['user_message'] = context["content"]
                 dict1['create_time'] = context["msg"].create_time
-                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
                 # 校验关键字
                 match_prefix = check_prefix(content, conf().get("group_chat_prefix"))
@@ -162,7 +163,23 @@ class ChatChannel(Channel):
         elif context.type == ContextType.VOICE:
             if "desire_rtype" not in context and conf().get("voice_reply_voice") and ReplyType.VOICE not in self.NOT_SUPPORT_REPLYTYPE:
                 context["desire_rtype"] = ReplyType.VOICE
-
+        elif ctype == ContextType.SHARING:
+            if context.get("isgroup", False):  # 群聊
+                # 记录所有的群聊链接分享信息
+                dict1 = {}
+                dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                dict1['group_chat_id'] = context["msg"].other_user_id
+                dict1['msg_type'] = 'SHARING'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT/SHARING
+                dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
+                dict1['user_id'] = context["msg"].actual_user_id
+                dict1['is_at'] = context["msg"].is_at
+                dict1['at_user_name'] = context["msg"].to_user_nickname
+                dict1['at_user_id'] = context["msg"].to_user_id
+                dict1['user_message'] = context["content"]  # Url
+                dict1['create_time'] = context["msg"].create_time
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
         return context
 
     def _handle(self, context: Context):
@@ -219,17 +236,17 @@ class ChatChannel(Channel):
                     dict1 = {}
                     dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
                     dict1['group_chat_id'] = context["msg"].other_user_id
-                    dict1['msg_type'] = ContextType.VOICE # 1是文本，3是图片，34是语音，43是视频，49是文件，10000是系统提示
-                    dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
-                    # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
-                    # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                    dict1['msg_type'] = 'VOICE'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                    dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                    # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                    # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
                     dict1['user_id'] = context["msg"].actual_user_id
                     dict1['is_at'] = context["msg"].is_at
                     dict1['at_user_name'] = context["msg"].to_user_nickname
                     dict1['at_user_id'] = context["msg"].to_user_id
                     dict1['user_message'] = context["content"]
                     dict1['create_time'] = context["msg"].create_time
-                    self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+                    self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
                 if reply.type == ReplyType.TEXT:
                     new_context = self._compose_context(ContextType.TEXT, reply.content, **context.kwargs)
@@ -255,17 +272,17 @@ class ChatChannel(Channel):
                         dict1 = {}
                         dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
                         dict1['group_chat_id'] = context["msg"].other_user_id
-                        dict1['msg_type'] = ContextType.IMAGE # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
-                        dict1['user_name'] = context["msg"].actual_user_nickname # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
-                        # md.update(msg['ActualNickName'].encode('utf-8')) # 制定需要加密的字符串
-                        # dict1['user_name'] = md.hexdigest()[0:8] # 获取加密后的16进制字符串的前8个字符
+                        dict1['msg_type'] = 'IMAGE'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                        dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                        # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                        # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
                         dict1['user_id'] = context["msg"].actual_user_id
                         dict1['is_at'] = context["msg"].is_at
                         dict1['at_user_name'] = context["msg"].to_user_nickname
                         dict1['at_user_id'] = context["msg"].to_user_id
                         dict1['user_message'] = str_base64  # 图片，转码成BASE64
                         dict1['create_time'] = context["msg"].create_time
-                        self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/status", json.dumps(dict1, ensure_ascii=False))
+                        self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
 
                 pass
                 # 4. 删除临时图片文件

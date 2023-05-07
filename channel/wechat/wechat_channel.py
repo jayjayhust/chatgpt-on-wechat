@@ -39,7 +39,7 @@ def handler_single_msg(msg):
     return None
 
 
-@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE], isGroupChat=True)
+@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING], isGroupChat=True)
 def handler_group_msg(msg):
     try:
         cmsg = WechatMessage(msg, True)
@@ -178,10 +178,11 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
-            pass
+        elif cmsg.ctype == ContextType.SHARING:
+            logger.debug("[WX]receive group sharing: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))
-        context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)
+        context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)  # 组织消息（包含过滤）
         if context:
             self.produce(context)  # 调用父类的produce()方法
 
