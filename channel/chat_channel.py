@@ -222,7 +222,7 @@ class ChatChannel(Channel):
                     wav_path = file_path
                 # 语音识别
                 reply = super().build_voice_to_text(wav_path)  # 语音转文本
-                logger.debug("voice recognize result: " + reply)
+                logger.debug("voice recognize result: " + reply.content)
                 # 删除临时文件
                 try:
                     os.remove(file_path)
@@ -245,7 +245,7 @@ class ChatChannel(Channel):
                     dict1['is_at'] = context["msg"].is_at
                     dict1['at_user_name'] = context["msg"].to_user_nickname
                     dict1['at_user_id'] = context["msg"].to_user_id
-                    dict1['user_message'] = context["content"]
+                    dict1['user_message'] = reply.content  # 语音识别的结果
                     dict1['create_time'] = context["msg"].create_time
                     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
