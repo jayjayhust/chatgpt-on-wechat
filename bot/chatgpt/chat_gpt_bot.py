@@ -16,6 +16,61 @@ from common.log import logger
 from common.token_bucket import TokenBucket
 from config import conf, load_config
 
+import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
+from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
+import os
+
+### init pinecone configuration
+pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
+pinecone.init(
+    # api_key="pinecone api key",
+    api_key=pinecone_api_key,
+    environment="eu-west1-gcp"
+)
+
+# create or connect to index
+index_name = "holon-expert-2023-0509"
+if index_name not in pinecone.list_indexes():
+    pinecone.create_index(index_name, dimension=1536)
+    logger.debug("pinecone index created!")
+
+# connect to index(this operation shall take a while)
+index = pinecone.Index(index_name)
+logger.debug("pinecone index connected!")
+
+### Query Index
+def search_docs(query):
+    xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
+    res = index.query([xq], top_k=5, include_metadata=True)
+    chosen_text = []
+    for match in res['matches']:
+        chosen_text = match['metadata']
+    return res['matches']
+
+
+### Construct Prompt
+def construct_prompt(query):
+    is_in_index = False
+    matches = search_docs(query)
+
+    chosen_text = []
+    for match in matches:
+        chosen_text.append(match['metadata']['text'])
+        if(match['score'] > 0.85):
+            is_in_index = True
+
+    if (is_in_index):
+        prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know.'"""
+        prompt += "\n\n"
+        # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
+        prompt += "Context: " + "\n".join('%s' %a for a in chosen_text)
+        prompt += "\n\n"
+        prompt += "Question: " + query
+        prompt += "\n"
+        prompt += "Answer: "
+        return prompt
+    else:
+        return query
 
 # OpenAI对话模型API (可用)
 class ChatGPTBot(Bot, OpenAIImage):
@@ -62,7 +117,12 @@ class ChatGPTBot(Bot, OpenAIImage):
                 reply = Reply(ReplyType.INFO, "配置已更新")
             if reply:
                 return reply
-            session = self.sessions.session_query(query, session_id)
+            # 在这里重组query
+            prompt = construct_prompt(query)
+            logger.debug(prompt)
+                
+            # session = self.sessions.session_query(query, session_id)
+            session = self.sessions.session_query(prompt, session_id)
             logger.debug("[CHATGPT] session query={}".format(session.messages))
 
             api_key = context.get("openai_api_key")

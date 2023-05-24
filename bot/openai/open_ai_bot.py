@@ -16,7 +16,6 @@ from config import conf
 
 user_session = dict()
 
-
 # OpenAI对话模型API (可用)
 class OpenAIBot(Bot, OpenAIImage):
     def __init__(self):
