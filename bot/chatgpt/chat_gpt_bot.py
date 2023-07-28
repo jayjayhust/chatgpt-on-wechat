@@ -30,6 +30,7 @@ pinecone.init(
 
 # create or connect to index
 index_name = "holon-expert-2023-0509"
+# index_name = "community-expert-hunan-cs-2023-05-test"
 if index_name not in pinecone.list_indexes():
     pinecone.create_index(index_name, dimension=1536)
     logger.debug("pinecone index created!")
@@ -51,6 +52,7 @@ def search_docs(query):
 ### Construct Prompt
 def construct_prompt(query):
     is_in_index = False
+    # is_in_index = True
     matches = search_docs(query)
 
     chosen_text = []
@@ -60,7 +62,11 @@ def construct_prompt(query):
             is_in_index = True
 
     if (is_in_index):
-        prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know.'"""
+        prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know or 抱歉我的知识库还没有这块的知识.'.Remember to reply in the same language as the Question."""
+        # prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, \
+        # just feel free to answer by yourself. No need to mention the context provided below and remember to reply in the same language as the Question.'"""
+        # prompt = """Answer the question by using the context below, and if the answer is no within the context, \
+        # just feel free to answer by yourself. No need to mention the context provided below and remember to reply in the same language as the Question.'"""
         prompt += "\n\n"
         # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
         prompt += "Context: " + "\n".join('%s' %a for a in chosen_text)
@@ -91,11 +97,11 @@ class ChatGPTBot(Bot, OpenAIImage):
             "model": conf().get("model") or "gpt-3.5-turbo",  # 对话模型的名称
             "temperature": conf().get("temperature", 0.9),  # 值在[0,1]之间，越大表示回复越具有不确定性
             # "max_tokens":4096,  # 回复最大的字符数
-            "top_p": 1,
-            "frequency_penalty": conf().get("frequency_penalty", 0.0),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            "presence_penalty": conf().get("presence_penalty", 0.0),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            "request_timeout": conf().get("request_timeout", None),  # 请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
-            "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
+            # "top_p": 1,
+            # "frequency_penalty": conf().get("frequency_penalty", 0.0),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+            # "presence_penalty": conf().get("presence_penalty", 0.0),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
+            # "request_timeout": conf().get("request_timeout", None),  # 请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
+            # "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
         }
 
     def reply(self, query, context=None):
@@ -117,7 +123,7 @@ class ChatGPTBot(Bot, OpenAIImage):
                 reply = Reply(ReplyType.INFO, "配置已更新")
             if reply:
                 return reply
-            # 在这里重组query
+            # 在这里重组query(加载pinecone专家库，先进行专家库检索)
             prompt = construct_prompt(query)
             logger.debug(prompt)
                 

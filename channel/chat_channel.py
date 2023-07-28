@@ -124,7 +124,7 @@ class ChatChannel(Channel):
                     ]
                 ):
                     group_chat_in_one_session = conf().get("group_chat_in_one_session", [])
-                    session_id = cmsg.actual_user_id
+                    session_id = cmsg.actual_user_id  # 选取用户id(actual_user_id)用作session_id(同一个用户在不同群中的actual_user_id一致么？)
                     if any(
                         [
                             group_name in group_chat_in_one_session,

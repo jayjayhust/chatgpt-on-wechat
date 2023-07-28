@@ -21,6 +21,7 @@ available_setting = {
     "mqtt_password": "admin",  # mqtt服务器密码
     "bot_id": "bot_test",  # 机器人名称
     "pinecone_api_key": "", # pinecone api key
+    "zhipu_api_key": "", # ChatGLM api key
     # chatgpt模型， 当use_azure_chatgpt为true时，其名称为Azure上model deployment名称
     "model": "gpt-3.5-turbo",
     "use_azure_chatgpt": False,  # 是否使用azure的chatgpt

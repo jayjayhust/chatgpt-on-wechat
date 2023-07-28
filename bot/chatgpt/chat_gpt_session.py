@@ -17,6 +17,7 @@ class ChatGPTSession(Session):
         self.model = model
         self.reset()
 
+    # 去除超长的历史聊天记录部分
     def discard_exceeding(self, max_tokens, cur_tokens=None):
         precise = True
         try:
@@ -26,9 +27,9 @@ class ChatGPTSession(Session):
             if cur_tokens is None:
                 raise e
             logger.debug("Exception when counting tokens precisely for query: {}".format(e))
-        while cur_tokens > max_tokens:
-            if len(self.messages) > 2:
-                self.messages.pop(1)
+        while cur_tokens > max_tokens:  # 如果当前聊天记录token总数大于指定token总数
+            if len(self.messages) > 2:  # 如果历史消息条数大于2
+                self.messages.pop(1)  # 把第1条数据剔除出列表（为什么不是第0条？第0条是机器人人设么？）
             elif len(self.messages) == 2 and self.messages[1]["role"] == "assistant":
                 self.messages.pop(1)
                 if precise:

@@ -5,7 +5,7 @@ from config import conf
 
 class Session(object):
     def __init__(self, session_id, system_prompt=None):
-        self.session_id = session_id
+        self.session_id = session_id  # session_id取的？(参见chat_channel.py中的注释代码)
         self.messages = []
         if system_prompt is None:
             self.system_prompt = conf().get("character_desc", "")
@@ -60,13 +60,14 @@ class SessionManager(object):
             self.sessions[session_id].set_system_prompt(system_prompt)
         session = self.sessions[session_id]
         return session
-
+    
+    # 更新对应session_id下保存聊天记录的会话
     def session_query(self, query, session_id):
         session = self.build_session(session_id)
         session.add_query(query)
         try:
             max_tokens = conf().get("conversation_max_tokens", 1000)
-            total_tokens = session.discard_exceeding(max_tokens, None)
+            total_tokens = session.discard_exceeding(max_tokens, None)  # 去除超长的历史聊天记录部分
             logger.debug("prompt tokens used={}".format(total_tokens))
         except Exception as e:
             logger.debug("Exception when counting tokens precisely for prompt: {}".format(str(e)))
