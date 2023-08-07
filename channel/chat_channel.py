@@ -61,7 +61,7 @@ class ChatChannel(Channel):
             config = conf()
             cmsg = context["msg"]
             user_data = conf().get_user_data(cmsg.from_user_id)
-            context["openai_api_key"] = user_data.get("openai_api_key")
+            # context["openai_api_key"] = user_data.get("openai_api_key")  # commented by jay@20230729(not checked!)
             if context.get("isgroup", False): 
                 if ctype == ContextType.TEXT:  # 群聊文本（前置，防止被白名单过滤）
                     # 记录所有的群聊文本信息(有个问题就是自己发送的信息，即使加了@，也不会被认为is_at是true!!!)
@@ -377,6 +377,20 @@ class ChatChannel(Channel):
             if not e_context.is_pass() and reply and reply.type:
                 logger.debug("[WX] ready to send reply: {}, context: {}".format(reply, context))
                 self._send(reply, context)
+                 # 将要回复的文本记录通过MQTT发送给记录服务器(added by jay@20230807)
+                dict1 = {}
+                dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                dict1['group_chat_id'] = context["msg"].other_user_id
+                dict1['msg_type'] = 'TEXT'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                dict1['user_name'] = context["msg"].to_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                dict1['user_id'] = context["msg"].to_user_id
+                dict1['is_at'] = context["msg"].is_at
+                dict1['at_user_name'] = context["msg"].actual_user_nickname
+                dict1['at_user_id'] = context["msg"].actual_user_id
+                dict1['user_message'] = reply.content
+                dict1['create_time'] = context["msg"].create_time
+                dict1['bot_id'] = conf().get("bot_id")
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
     def _send(self, reply: Reply, context: Context, retry_cnt=0):
         try:
