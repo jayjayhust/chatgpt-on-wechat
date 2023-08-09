@@ -18,6 +18,7 @@ from communication.mqtt_client import mqtt_client
 import base64  # 二进制方式打开图片文件
 import hashlib # 导入hashlib模块
 
+from utility.text_abstract import text_abstract
 
 try:
     from voice.audio_convert import any_to_wav
@@ -41,6 +42,7 @@ class ChatChannel(Channel):
                                             conf().get("mqtt_username", "admin"), 
                                             conf().get("mqtt_password", "admin"), 
                                             600)
+        self.text_abstract_inst = text_abstract()
         _thread = threading.Thread(target=self.consume)
         _thread.setDaemon(True)
         _thread.start()
@@ -322,6 +324,14 @@ class ChatChannel(Channel):
                     pass
                     # logger.warning("[WX]delete temp file error: " + str(e))
                 return
+            elif context.type == ContextType.SHARING:  # 分享链接的解读功能(added by jay@20230808)
+                # reply = "Wow you just shared a link, please wait for few days so i can read that for you~"
+                url = context["content"]
+                text = self.text_abstract_inst.get_web_text(url)
+                text_abstract = self.text_abstract_inst.get_text_abstract(text)
+                logger.debug(text_abstract)
+                reply.type = ReplyType.TEXT
+                reply.content = text_abstract
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return
