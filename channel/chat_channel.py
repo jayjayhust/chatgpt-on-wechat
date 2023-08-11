@@ -341,6 +341,8 @@ class ChatChannel(Channel):
                         reply.type = ReplyType.TEXT
                         reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
                         return reply
+                    elif(len(text) < 300):
+                        return None
                     text_abstract = self.text_abstract_inst.get_text_abstract(text)
                     logger.debug(text_abstract)
                     reply.type = ReplyType.TEXT
