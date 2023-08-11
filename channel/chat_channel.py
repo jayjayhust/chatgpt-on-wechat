@@ -325,13 +325,29 @@ class ChatChannel(Channel):
                     # logger.warning("[WX]delete temp file error: " + str(e))
                 return
             elif context.type == ContextType.SHARING:  # 分享链接的解读功能(added by jay@20230808)
-                # reply = "Wow you just shared a link, please wait for few days so i can read that for you~"
-                url = context["content"]
-                text = self.text_abstract_inst.get_web_text(url)
-                text_abstract = self.text_abstract_inst.get_text_abstract(text)
-                logger.debug(text_abstract)
-                reply.type = ReplyType.TEXT
-                reply.content = text_abstract
+                group_chat_name = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                group_name_share_text_abstract_white_list = conf().get("group_name_share_text_abstract_white_list", [])  # 获取开启摘要功能的白名单
+                if any(
+                    [
+                        group_chat_name in group_name_share_text_abstract_white_list,
+                    ]
+                ):
+                    logger.debug(group_chat_name + ' is in group_name_share_text_abstract_white_list')
+
+                    url = context["content"]
+                    text = self.text_abstract_inst.get_web_text(url)
+                    if(len(text) > 8000):
+                        logger.debug('Text in this shared link is too long!')
+                        reply.type = ReplyType.TEXT
+                        reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
+                        return reply
+                    text_abstract = self.text_abstract_inst.get_text_abstract(text)
+                    logger.debug(text_abstract)
+                    reply.type = ReplyType.TEXT
+                    reply.content = text_abstract
+                else:
+                    logger.debug(group_chat_name + ' not is in group_name_share_text_abstract_white_list')
+                    return None
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return
