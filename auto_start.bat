@@ -1,0 +1,1 @@
+C:/Python310/python.exe d:/Workspace/InteractiveArts/9.AI/ChatGPT/WechatBot/chatgpt-on-wechat/app.py
