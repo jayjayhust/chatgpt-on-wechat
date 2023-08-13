@@ -19,7 +19,7 @@ available_setting = {
     "mqtt_port": 1883,  # mqtt服务器端口
     "mqtt_username": "admin",  # mqtt服务器用户名
     "mqtt_password": "admin",  # mqtt服务器密码
-    "bot_id": "bot_test",  # 机器人名称
+    "bot_id": "bot_test",  # 机器人名称(后面保证唯一性，可以用登录用户的昵称+id组合来表示)
     "pinecone_api_key": "", # pinecone api key
     "zhipu_api_key": "", # ChatGLM api key
     # chatgpt模型， 当use_azure_chatgpt为true时，其名称为Azure上model deployment名称
