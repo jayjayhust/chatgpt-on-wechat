@@ -90,7 +90,7 @@ class ChatGLMImageBot(Bot, OpenAIImage):
 
     def reply(self, query, context=None):
         # acquire reply content
-        if context.type == ContextType.TEXT:
+        if context.type == ContextType.TEXT:  # 对文字信息进行回复
             # 在这里重组query(加载pinecone专家库，先进行专家库检索)
             new_prompt = construct_prompt(query)
             logger.debug(new_prompt)
@@ -128,7 +128,7 @@ class ChatGLMImageBot(Bot, OpenAIImage):
                 )
                 return reply
 
-        elif context.type == ContextType.IMAGE_CREATE:
+        elif context.type == ContextType.IMAGE_CREATE:  # 对绘图要求进行回复
             ok, retstring = self.create_img(query, 0)
             reply = None
             if ok:
