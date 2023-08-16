@@ -70,13 +70,13 @@ def _check(func):
 # https://api.qrserver.com/v1/create-qr-code/?size=400×400&data=https://www.abc.com
 # https://api.isoyu.com/qr/?m=1&e=L&p=20&url=https://www.abc.com
 def qrCallback(uuid, status, qrcode):
-    # logger.debug("qrCallback: {} {}".format(uuid,status))
+    logger.debug("qrCallback: {} {} {}".format(uuid, status, qrcode))
     if status == "0":
         try:
             from PIL import Image
 
             img = Image.open(io.BytesIO(qrcode))
-            _thread = threading.Thread(target=img.show, args=("QRCode",))
+            _thread = threading.Thread(target=img.show, args=("QRCode",))  # 定义显示图片的线程任务
             _thread.setDaemon(True)
             _thread.start()
         except Exception as e:
@@ -96,6 +96,7 @@ def qrCallback(uuid, status, qrcode):
         print(qr_api2)
         print(qr_api1)
 
+        # 输出二维码到终端界面
         qr = qrcode.QRCode(border=1)
         qr.add_data(url)
         qr.make(fit=True)
