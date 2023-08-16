@@ -24,7 +24,7 @@ class mqtt_client(object):
         # 订阅
         # client.subscribe("mqtt11")
         # 发布机器人上线消息
-        client.publish(f"/chatgpt/groupchat/{self.bot_id}/status", "{'status'': 'online', 'bot_id': '" + self.bot_id + "'}")
+        client.publish(f"/chatgpt/groupchat/{self.bot_id}/status", "{'status'': 'log online', 'bot_id': '" + self.bot_id + "'}")
  
     def on_message(self, client, userdata, msg):
         logger.debug("on_message topic:" + msg.topic + " message:" + str(msg.payload.decode('utf-8')))

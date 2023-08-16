@@ -80,7 +80,7 @@ class ChatChannel(Channel):
                     dict1['at_user_id'] = context["msg"].to_user_id
                     dict1['user_message'] = context["content"]
                     dict1['create_time'] = context["msg"].create_time
-                    dict1['bot_id'] = conf().get("bot_id")
+                    dict1['bot_id'] = self.user_id
                     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
                 elif ctype == ContextType.IMAGE:  # 群聊图片（前置，防止被白名单过滤）
                     # 1. 获取图片文件地址
@@ -110,7 +110,7 @@ class ChatChannel(Channel):
                         dict1['at_user_id'] = context["msg"].to_user_id
                         dict1['user_message'] = str_base64  # 图片，转码成BASE64
                         dict1['create_time'] = context["msg"].create_time
-                        dict1['bot_id'] = conf().get("bot_id")
+                        dict1['bot_id'] = self.user_id
                         self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
 
                 group_name = cmsg.other_user_nickname
@@ -418,7 +418,7 @@ class ChatChannel(Channel):
                     dict1['at_user_id'] = context["msg"].actual_user_id
                     dict1['user_message'] = reply.content
                     dict1['create_time'] = context["msg"].create_time
-                    dict1['bot_id'] = conf().get("bot_id")
+                    dict1['bot_id'] = self.user_id
                     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
     def _send(self, reply: Reply, context: Context, retry_cnt=0):
