@@ -13,6 +13,7 @@ plugins.json
 itchat.pkl
 *.log
 user_datas.pkl
+build
 chatgpt_tool_hub/
 plugins/**/
 !plugins/bdunit
