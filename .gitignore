@@ -16,6 +16,7 @@ user_datas.pkl
 # 忽略build文件和build目录
 build
 dist
+app.spec
 # 只忽略chatgpt_tool_hub目录，不忽略chatgpt_tool_hub文件
 chatgpt_tool_hub/
 plugins/**/
