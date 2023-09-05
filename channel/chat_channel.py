@@ -324,7 +324,7 @@ class ChatChannel(Channel):
                     pass
                     # logger.warning("[WX]delete temp file error: " + str(e))
                 return
-            elif context.type == ContextType.SHARING:  # 分享链接的解读功能(added by jay@20230808)
+            elif context.type == ContextType.SHARING:  # 分享链接的摘要功能(added by jay@20230808)
                 group_chat_name = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
                 group_name_share_text_abstract_white_list = conf().get("group_name_share_text_abstract_white_list", [])  # 获取开启摘要功能的白名单
                 if any(
