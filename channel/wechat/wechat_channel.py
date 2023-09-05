@@ -122,7 +122,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             enableCmdQR=2,
             hotReload=hotReload,
             statusStorageDir=status_path,
-            qrCallback=qrCallback,
+            qrCallback=qrCallback,  # method that should accept uuid, status, qrcode for usage
         )
         self.user_id = itchat.instance.storageClass.userName
         self.name = itchat.instance.storageClass.nickName
@@ -175,7 +175,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             logger.debug("[WX]receive voice for group msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.IMAGE:
             logger.debug("[WX]receive image for group msg: {}".format(cmsg.content))
-        elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:
+        elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:  # 有人加入群，或者拍一拍
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))

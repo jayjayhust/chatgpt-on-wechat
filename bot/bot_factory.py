@@ -11,10 +11,10 @@ def create_bot(bot_type):
     :return: bot instance
     """
     if bot_type == const.BAIDU:
-        # Baidu Unit对话接口
-        from bot.baidu.baidu_unit_bot import BaiduUnitBot
+        # Baidu ERNIE对话接口
+        from bot.baidu.baidu_ernie_bot import BaiduErnieBot
 
-        return BaiduUnitBot()
+        return BaiduErnieBot()
 
     elif bot_type == const.CHATGPT:
         # ChatGPT 网页端web接口
