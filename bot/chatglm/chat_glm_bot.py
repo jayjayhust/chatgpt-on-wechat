@@ -100,7 +100,7 @@ class ChatGLMBot(Bot):
         if response['code'] == 200:
             reply = Reply(
                 ReplyType.TEXT,
-                str(response["data"]["choices"][0]["content"]).replace(' ', '').replace('"', '').replace('\n', ''),
+                str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', ''),
             )
             return reply
         else:
