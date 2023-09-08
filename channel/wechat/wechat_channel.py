@@ -96,11 +96,14 @@ def qrCallback(uuid, status, qrcode):
         print(qr_api2)
         print(qr_api1)
 
-        # 输出二维码到终端界面
+        # 输出登录二维码到终端界面
         qr = qrcode.QRCode(border=1)
         qr.add_data(url)
         qr.make(fit=True)
         qr.print_ascii(invert=True)
+
+        # 发送登录二维码及设备id到后台（http post）
+        # (代码待完善)
 
 
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
