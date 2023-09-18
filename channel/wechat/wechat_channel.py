@@ -24,6 +24,7 @@ from config import conf, get_appdata_dir
 from lib import itchat
 from lib.itchat.content import *
 from plugins import *
+from utility.mac_derive import mac_derive
 
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
@@ -102,9 +103,16 @@ def qrCallback(uuid, status, qrcode):
         qr.make(fit=True)
         qr.print_ascii(invert=True)
 
-        # 发送登录二维码及设备id到后台（http post）
-        # (代码待完善)
-
+        # 1.发送登录二维码请求及设备id（utility/mac_derive.py）到后台（http post）--->用户需要手机微信扫码登录，不能长按识别，如何解决？？？
+        # 解决办法（给auto_login方法传入值为真的hotReload）：https://www.cnblogs.com/Rain2017/p/11401189.html
+        # 2.登录完成后，还要把登录账号信息（微信昵称，微信id）及设备id也发送到后台（http post）
+        # (此处代码待完善)
+        mac_derive_inst = mac_derive()
+        wlan_mac = mac_derive_inst.get_wlan_mac()
+        if wlan_mac != None:
+            logger.info("wlan_mac: {}".format(wlan_mac))
+        else:
+            logger.info("wlan_mac is not available")
 
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
 @singleton
@@ -118,18 +126,40 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
 
     def startup(self):
         itchat.instance.receivingRetryCount = 600  # 修改断线超时时间
-        # login by scan QRCode
-        hotReload = conf().get("hot_reload", False)
+        # option 1: login by scan QRCode
+        # hotReload = conf().get("hot_reload", False)  # hot_reload是指利用缓存、不用扫码登录
+        # status_path = os.path.join(get_appdata_dir(), "itchat.pkl")
+        # itchat.auto_login(
+        #     enableCmdQR=2,
+        #     hotReload=hotReload,
+        #     statusStorageDir=status_path,
+        #     qrCallback=qrCallback,  # method that should accept uuid, status, qrcode for usage
+        # )
+        # option 2: login using hot_reload(首次登录，因为没有"itchat.pkl"缓存文件，还是会要用户扫描二维码，后面每次再掉线后（比如项目出错）/OTA更新的时候，
+        # 只要短时间内再重登录，则不用用户再扫码，所以这个对系统的自动化运维提出了很高的要求，否则就需要用户再用手机微信扫描登录二维码，而这个场景其实是比较困难的，
+        # 实施成本会比较高。)
+        # 给auto_login方法传入值为真的hotReload：https://www.cnblogs.com/Rain2017/p/11401189.html
+        hotReload = conf().get("hot_reload", True)  # hot_reload是指利用缓存、不用扫码登录（该方法会生成一个静态文件itchat.pkl，用于存储登陆的状态）
         status_path = os.path.join(get_appdata_dir(), "itchat.pkl")
         itchat.auto_login(
-            enableCmdQR=2,
+            # enableCmdQR=2,
             hotReload=hotReload,
             statusStorageDir=status_path,
             qrCallback=qrCallback,  # method that should accept uuid, status, qrcode for usage
         )
         self.user_id = itchat.instance.storageClass.userName
         self.name = itchat.instance.storageClass.nickName
+        logger.info('*' * 100)
         logger.info("Wechat login success, user_id: {}, nickname: {}".format(self.user_id, self.name))
+        # 登录完成后，把登录账号信息（微信昵称，微信id）及设备id也发送到后台（http post）
+        # (此处代码待完善)
+        mac_derive_inst = mac_derive()
+        wlan_mac = mac_derive_inst.get_wlan_mac()
+        if wlan_mac != None:
+            logger.info("wlan_mac: {}".format(wlan_mac))
+        else:
+            logger.info("wlan_mac is not available")
+
         # start message listener
         itchat.run()
 

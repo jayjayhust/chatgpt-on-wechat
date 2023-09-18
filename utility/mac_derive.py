@@ -29,7 +29,7 @@ def list_all_mac():
 
 
 # 获取无线网卡MAC地址
-def list_lan_mac():
+def list_wlan_mac():
     for k, v in net_if_addrs().items():
         print('*' * 100)
         print(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
@@ -43,8 +43,8 @@ class mac_derive(object):
     def __init__(self):
         pass
     
-    # 获取所有MAC地址
-    def get_all_mac(self):
+    # 打印所有MAC地址和IP地址
+    def list_all_mac_and_ip(self):
         for k, v in net_if_addrs().items():
             print('*' * 100)
             print(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
@@ -56,7 +56,7 @@ class mac_derive(object):
                     print(address)  # 输出形如：192.168.0.28
 
     # 获取无线网卡MAC地址
-    def get_lan_mac(self):
+    def get_wlan_mac(self):
         for k, v in net_if_addrs().items():
             print('*' * 100)
             print(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
@@ -66,4 +66,5 @@ class mac_derive(object):
                     if '-' in address and len(address)==17:
                         print(address)  # 输出形如：B0-25-AA-4C-55-AC
                         return address
+        return None
 
