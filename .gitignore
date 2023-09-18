@@ -11,6 +11,7 @@ nohup.out
 tmp
 plugins.json
 app.spec
+# itchat登录的缓存文件
 itchat.pkl
 *.log
 user_datas.pkl
