@@ -112,6 +112,8 @@ class ChatChannel(Channel):
                         dict1['create_time'] = context["msg"].create_time
                         dict1['bot_id'] = self.user_id
                         self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
+                    # 3.删除图片（图片路径为file_path）
+                    os.remove(file_path)
 
                 group_name = cmsg.other_user_nickname
                 group_id = cmsg.other_user_id
