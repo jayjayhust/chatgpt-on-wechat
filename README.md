@@ -199,8 +199,43 @@ nohup python3 app.py & tail -f nohup.out          # 在后台运行程序并通�
 FAQs： <https://github.com/zhayujie/chatgpt-on-wechat/wiki/FAQs>
 
 
-## 联系
+## 运维注意事项
+- run.log日志会不断增加，需要定期归档，不然会占用大量硬盘空间
 
-欢迎提交PR、Issues，以及Star支持一下。程序运行遇到问题优先查看 [常见问题列表](https://github.com/zhayujie/chatgpt-on-wechat/wiki/FAQs) ，其次前往 [Issues](https://github.com/zhayujie/chatgpt-on-wechat/issues) 中搜索。如果你想了解更多项目细节，并与开发者们交流更多关于AI技术的实践，欢迎加入星球:
 
-<a href="https://public.zsxq.com/groups/88885848842852.html"><img width="360" src="./docs/images/planet.jpg"></a>
+## 运行Supervisord来监控项目运行和崩溃自动启动
+- 环境准备（windows）
+  - 安装必要的python包：```pip install supervisor-win```
+
+
+- 配置文件
+  - 编写Supervisord配置文件supervisord.conf
+```
+[program:llm_wechat_bot]
+command = C:\\Python310\\python.exe app.py
+    
+[supervisord]
+nodaemon = true
+logfile = ./tmp/supervisord.log
+logfile_maxbytes = 50MB
+logfile_backups = 10
+loglevel = debug ;(log level;default info; others: debug,warn,trace)
+pidfile = ./tmp/supervisord.pid
+
+[supervisorctl]
+```
+
+- 运行
+  - 运行Supervisord：
+  ```supervisord -c D:\Workspace\InteractiveArts\9.AI\ChatGPT\WechatBot\chatgpt-on-wechat\supervisord.conf```
+
+- 问题集锦
+  - 报错：DLL load failed: 找不到指定的程序  
+  重新安装pywin32：```pip install pywin32==223```
+  - 报错：WARN exited: llm_wechat_bot (exit status 2; not expected)  
+  发现是supervisord.conf中路径的问题，windows下面的文件夹路径分隔符是\\，linux下面是//。改了还是不行，干脆把python文件的绝对路径都去掉了，就用项目下的python文件（相对路径）。
+  - 报错：UnicodeEncodeError: 'gbk' codec can't encode character '\u2580' in position 0: illegal multibyte sequence  
+  编码问题，解决不了，只能注释下出错的地方（这里是qrcode模块的print_ascii方法导致的问题），或者换别的python进程监控方案。
+
+- 效果记录
+  - 已确认情况1：在项目进程被人为关掉后，可以自动重启项目

@@ -31,3 +31,9 @@ plugins/**/
 !plugins/hello
 !plugins/role
 !plugins/keyword
+# supervisord监测的进程对象的日志输出文件
+stdout.log
+stderr.log
+# supervisord日志输出文件
+supervisord.log
+supervisord.pid

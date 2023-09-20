@@ -101,7 +101,7 @@ def qrCallback(uuid, status, qrcode):
         qr = qrcode.QRCode(border=1)
         qr.add_data(url)
         qr.make(fit=True)
-        qr.print_ascii(invert=True)
+        # qr.print_ascii(invert=True)
 
         # 1.发送登录二维码请求及设备id（utility/mac_derive.py）到后台（http post）--->用户需要手机微信扫码登录，不能长按识别，如何解决？？？
         # 解决办法（给auto_login方法传入值为真的hotReload）：https://www.cnblogs.com/Rain2017/p/11401189.html
