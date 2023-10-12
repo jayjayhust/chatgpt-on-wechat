@@ -72,21 +72,21 @@ def construct_prompt(query):
     else:
         return query
 
+def get_token(self):
+    access_key = conf().get("baidu_ernie_access_key")
+    secret_key = conf().get("baidu_ernie_secret_key")
+    url  = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + access_key + "&client_secret=" + secret_key
+    payload = json.dumps("")
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+        
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.json().get("access_token")
+
 # Baidu ERNIE-Bot-turbo对话接口 
 class BaiduErnieBot(Bot):
-    def get_token(self):
-        access_key = conf().get("baidu_ernie_access_key")
-        secret_key = conf().get("baidu_ernie_secret_key")
-        url  = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + access_key + "&client_secret=" + secret_key
-        payload = json.dumps("")
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        
-        response = requests.request("POST", url, headers=headers, data=payload)
-        return response.json().get("access_token")
-    
     def reply(self, query, context=None):
         # 在这里重组query(加载pinecone专家库，先进行专家库检索)
         new_prompt = construct_prompt(query)
