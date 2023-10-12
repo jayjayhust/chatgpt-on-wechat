@@ -72,7 +72,7 @@ def construct_prompt(query):
     else:
         return query
 
-def get_token(self):
+def get_token():
     access_key = conf().get("baidu_ernie_access_key")
     secret_key = conf().get("baidu_ernie_secret_key")
     url  = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + access_key + "&client_secret=" + secret_key
