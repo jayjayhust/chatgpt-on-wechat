@@ -149,7 +149,7 @@ class text_abstract(object):
             logger.debug(response)
 
             if response['code'] == 200:
-                return "以下回复来自智谱AI(GhatGLM)宝宝：" + str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '')
+                return "以下回复来自智谱AI(GhatGLM)：" + str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '')
         if model_type in ["ernie_bot", "ernie_bot_turbo"]:
             # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
             access_key = conf().get("baidu_ernie_access_key")
@@ -162,7 +162,7 @@ class text_abstract(object):
             }
             
             response = requests.request("POST", url, headers=headers, data=payload)
-            access_token = "以下回复来自文心一言宝宝：" + response.json().get("access_token")
+            access_token = response.json().get("access_token")
 
             url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + access_token
             payload = json.dumps({
@@ -181,5 +181,5 @@ class text_abstract(object):
             
             response = requests.request("POST", url, headers=headers, data=payload)
             if response:
-                return "以下回复来自文心一言(ERNIE)宝宝：" + response.json()["result"]
+                return "以下回复来自文心一言(ERNIE)：" + response.json()["result"]
 
