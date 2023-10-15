@@ -12,7 +12,7 @@ from common.log import logger
 
 
 class BaiduErnieSession(Session):
-    def __init__(self, session_id, system_prompt=None, model="gpt-3.5-turbo"):
+    def __init__(self, session_id, system_prompt=None, model="ernie_bot_turbo"):
         super().__init__(session_id, system_prompt)
         self.model = model
         self.reset()
@@ -63,7 +63,7 @@ def num_tokens_from_messages(messages, model):
     except KeyError:
         logger.debug("Warning: model not found. Using cl100k_base encoding.")
         encoding = tiktoken.get_encoding("cl100k_base")
-    if model == "gpt-3.5-turbo" or model == "gpt-35-turbo":
+    if model == "ernie_bot_turbo":
         return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301")
     elif model == "gpt-4":
         return num_tokens_from_messages(messages, model="gpt-4-0314")

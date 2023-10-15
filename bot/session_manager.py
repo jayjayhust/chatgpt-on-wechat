@@ -39,7 +39,7 @@ class Session(object):
 class SessionManager(object):
     def __init__(self, sessioncls, **session_args):
         if conf().get("expires_in_seconds"):
-            sessions = ExpiredDict(conf().get("expires_in_seconds"))
+            sessions = ExpiredDict(conf().get("expires_in_seconds"))  # 删除超过无操作会话过期时间的信息（单位秒）
         else:
             sessions = dict()
         self.sessions = sessions
