@@ -8,6 +8,7 @@ import json
 from bot.bot import Bot
 from bot.baidu.baidu_ernie_session import BaiduErnieSession
 from bot.session_manager import SessionManager
+from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from config import conf, load_config
 
@@ -106,45 +107,59 @@ class BaiduErnieSessionBot(Bot):
         }
 
     def reply(self, query, context=None):
-        session_id = context["session_id"]
-        reply = None  # 初始化reply
-        clear_memory_commands = conf().get("clear_memory_commands", ["#清除记忆"])
-        if query in clear_memory_commands:
-            self.sessions.clear_session(session_id)
-            reply = Reply(ReplyType.INFO, "记忆已清除")
-        elif query == "#清除所有":
-            self.sessions.clear_all_session()
-            reply = Reply(ReplyType.INFO, "所有人记忆已清除")
-        elif query == "#更新配置":
-            load_config()
-            reply = Reply(ReplyType.INFO, "配置已更新")
-        if reply:  # 如果是指令，直接回复
-            return reply
-        # 在这里重组query(加载pinecone专家库，先进行专家库检索)
-        prompt = construct_prompt(query)
-        logger.debug(prompt)
-        
-        session = self.sessions.session_query(prompt, session_id)
-        logger.debug("[ERNIE] session query={}".format(session.messages))
+        # acquire reply content
+        if context.type == ContextType.TEXT:
+            logger.info("[ERNIE] query={}".format(query))
+            session_id = context["session_id"]
+            reply = None  # 初始化reply
+            clear_memory_commands = conf().get("clear_memory_commands", ["#清除记忆"])
+            if query in clear_memory_commands:
+                self.sessions.clear_session(session_id)
+                reply = Reply(ReplyType.INFO, "记忆已清除")
+            elif query == "#清除所有":
+                self.sessions.clear_all_session()
+                reply = Reply(ReplyType.INFO, "所有人记忆已清除")
+            elif query == "#更新配置":
+                load_config()
+                reply = Reply(ReplyType.INFO, "配置已更新")
+            if reply:  # 如果是指令，直接回复
+                return reply
+            # 在这里重组query(加载pinecone专家库，先进行专家库检索)
+            prompt = construct_prompt(query)
+            logger.debug(prompt)
+            
+            session = self.sessions.session_query(prompt, session_id)
+            logger.debug("[ERNIE] session query={}".format(session.messages))
 
-        reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
-        logger.debug(
-            "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
-                session.messages,
-                session_id,
-                reply_content["content"],
-                reply_content["completion_tokens"],
+            reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
+            logger.debug(
+                "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
+                    session.messages,
+                    session_id,
+                    reply_content["content"],
+                    reply_content["completion_tokens"],
+                )
             )
-        )
-        if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
-            reply = Reply(ReplyType.ERROR, reply_content["content"])
-        elif reply_content["completion_tokens"] > 0:
-            self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
-            reply = Reply(ReplyType.TEXT, reply_content["content"])
+            if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
+                reply = Reply(ReplyType.ERROR, reply_content["content"])
+            elif reply_content["completion_tokens"] > 0:
+                self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
+                reply = Reply(ReplyType.TEXT, reply_content["content"])
+            else:
+                reply = Reply(ReplyType.ERROR, reply_content["content"])
+                logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
+            return reply
+        # elif context.type == ContextType.IMAGE_CREATE:
+        #     ok, retstring = self.create_img(query, 0)
+        #     reply = None
+        #     if ok:
+        #         reply = Reply(ReplyType.IMAGE_URL, retstring)
+        #     else:
+        #         reply = Reply(ReplyType.ERROR, retstring)
+        #     return reply
         else:
-            reply = Reply(ReplyType.ERROR, reply_content["content"])
-            logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
-        return reply
+            reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
+            return reply
         
     def reply_text(self, session: BaiduErnieSession, retry_count=0) -> dict:
         """
