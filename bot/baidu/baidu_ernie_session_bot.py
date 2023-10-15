@@ -177,42 +177,28 @@ class BaiduErnieSessionBot(Bot):
             
             response = requests.request("POST", url, headers=headers, data=payload)
             if response:
-                reply = Reply(
-                    ReplyType.TEXT,
-                    response.json()["result"],
-                )
-                logger.debug(reply.content)
-                # return reply
-                return {
-                    "total_tokens": response.json()["usage"]["total_tokens"],
-                    "completion_tokens": response.json()["usage"]["completion_tokens"],
-                    "content": response.json()["result"],
-                }
+                if response.json()["result"] != None:  # 正常回复的处理
+                    reply = Reply(
+                        ReplyType.TEXT,
+                        response.json()["result"],
+                    )
+                    logger.debug(reply.content)
+                    # return reply
+                    return {
+                        "total_tokens": response.json()["usage"]["total_tokens"],
+                        "completion_tokens": response.json()["usage"]["completion_tokens"],
+                        "content": response.json()["result"],
+                    }
+                elif response.json()["error_code"] != None:  # 异常回复的处理
+                    # return reply
+                    result = {"completion_tokens": 0, "content": response.json()["error_msg"]}
         except Exception as e:
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
-            if isinstance(e, openai.error.RateLimitError):
-                logger.warn("[ERNIE] RateLimitError: {}".format(e))
-                result["content"] = "提问太快啦，请休息一下再问我吧"
-                if need_retry:
-                    time.sleep(20)
-            elif isinstance(e, openai.error.Timeout):
-                logger.warn("[ERNIE] Timeout: {}".format(e))
-                result["content"] = "我没有收到你的消息"
-                if need_retry:
-                    time.sleep(5)
-            elif isinstance(e, openai.error.APIConnectionError):
-                logger.warn("[ERNIE] APIConnectionError: {}".format(e))
-                need_retry = False
-                result["content"] = "我连接不到你的网络"
-            else:
-                logger.warn("[ERNIE] Exception: {}".format(e))
-                need_retry = False
-                self.sessions.clear_session(session.session_id)
-
+            
             if need_retry:
                 logger.warn("[ERNIE] 第{}次重试".format(retry_count + 1))
-                return self.reply_text(session, api_key, retry_count + 1)
+                return self.reply_text(session, retry_count + 1)
             else:
                 return result
         
