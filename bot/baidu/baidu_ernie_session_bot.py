@@ -41,11 +41,22 @@ logger.debug("pinecone index connected!")
 def search_docs(query):
     # 这部分逻辑将来也要替换成国内大模型的Embedding接口
     xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
+    # def query(
+    # vector: List[float] | None = None,
+    # id: str | None = None,
+    # queries: List[QueryVector] | List[Tuple] | None = None,
+    # top_k: int | None = None,
+    # namespace: str | None = None,
+    # filter: Dict[str, str | float | int | bool | List | dict] | None = None,
+    # include_values: bool | None = None,
+    # include_metadata: bool | None = None,
+    # sparse_vector: SparseValues | Dict[str, List[float] | List[int]] | None = None,
+    # **kwargs: Any
     res = index.query([xq], top_k=5, include_metadata=True)
     chosen_text = []
-    for match in res['matches']:
-        chosen_text = match['metadata']
-    return res['matches']
+    # for match in res['matches']:  # 遍历查询的结果
+    #     chosen_text = match['metadata']
+    return res['matches']  # 返回查询的结果
 
 
 ### Construct Prompt
@@ -55,8 +66,8 @@ def construct_prompt(query):
     matches = search_docs(query)
 
     chosen_text = []
-    for match in matches:
-        chosen_text.append(match['metadata']['text'])
+    for match in matches:  # 遍历查询的结果
+        chosen_text.append(match['metadata']['text'])  # 提取单条数据的元数据部分的text字段内容
         if(match['score'] > 0.85):
             is_in_index = True
 
