@@ -41,7 +41,7 @@ logger.debug("pinecone index connected!")
 def search_docs(query):
     # 这部分逻辑将来也要替换成国内大模型的Embedding接口
     xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
-    # def query(
+    # pinecone的query方法：def query(
     # vector: List[float] | None = None,
     # id: str | None = None,
     # queries: List[QueryVector] | List[Tuple] | None = None,
@@ -72,18 +72,15 @@ def construct_prompt(query):
             is_in_index = True
 
     if (is_in_index):
-        prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know or 抱歉我的知识库还没有这块的知识.'.Remember to reply in the same language as the Question."""
-        # prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, \
-        # just feel free to answer by yourself. No need to mention the context provided below and remember to reply in the same language as the Question.'"""
-        # prompt = """Answer the question by using the context below, and if the answer is no within the context, \
-        # just feel free to answer by yourself. No need to mention the context provided below and remember to reply in the same language as the Question.'"""
+        # prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know or 抱歉我的知识库还没有这块的知识.'.Remember to reply in the same language as the Question."""
+        prompt = """请尽量如实回答用户的提问，如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'。记得用用户提问的语言来问答问题。"""
         prompt += "\n\n"
         # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
-        prompt += "Context: " + "\n".join('%s' %a for a in chosen_text)
+        prompt += "提供的背景内容：" + "\n".join('%s' %a for a in chosen_text)
         prompt += "\n\n"
-        prompt += "Question: " + query
+        prompt += "问题：" + query
         prompt += "\n"
-        prompt += "Answer: "
+        prompt += "回答："
         return prompt
     else:
         return query
