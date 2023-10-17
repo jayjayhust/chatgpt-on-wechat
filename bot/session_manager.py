@@ -1,6 +1,6 @@
 from common.expired_dict import ExpiredDict
 from common.log import logger
-from config import conf
+from config import conf, load_config
 
 
 class Session(object):
@@ -14,7 +14,14 @@ class Session(object):
 
     # 重置会话
     def reset(self):
-        system_item = {"role": "system", "content": self.system_prompt}
+        role = "system"
+        if conf().get("model", "") == "ernie_bot_turbo":
+            system_item = {"role": "user", "content": self.system_prompt}
+            self.messages = [system_item]
+            system_item = {"role": "assistant", "content": "好的，我记住了。"}
+            self.messages.append = [system_item]
+
+        system_item = {"role": role, "content": self.system_prompt}
         self.messages = [system_item]
 
     def set_system_prompt(self, system_prompt):

@@ -179,6 +179,7 @@ class BaiduErnieSessionBot(Bot):
             # ERNIE API: https://cloud.baidu.com/doc/WENXINWORKSHOP/s/4lilb2lpf
             url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + get_token()
             payload = json.dumps({
+                "system": conf().get("character_desc", ""),
                 # 聊天上下文信息。说明：
                 # （1）messages成员不能为空，1个成员表示单轮对话，多个成员表示多轮对话
                 # （2）最后一个message为当前请求的信息，前面的message为历史对话信息

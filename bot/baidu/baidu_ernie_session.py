@@ -28,16 +28,16 @@ class BaiduErnieSession(Session):
                 raise e
             logger.debug("Exception when counting tokens precisely for query: {}".format(e))
         while cur_tokens > max_tokens:  # 如果当前聊天记录token总数大于指定token总数
-            if len(self.messages) > 2:  # 如果历史消息条数大于2
-                self.messages.pop(1)  # 把第1条数据剔除出列表（为什么不是第0条？第0条是机器人人设么？）
+            if len(self.messages) > 3:  # 如果历史消息条数大于3
+                self.messages.pop(2)  # 把第2条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
             elif len(self.messages) == 2 and self.messages[1]["role"] == "assistant":
-                self.messages.pop(1)
+                self.messages.pop(2)
                 if precise:
                     cur_tokens = self.calc_tokens()
                 else:
                     cur_tokens = cur_tokens - max_tokens
                 break
-            elif len(self.messages) == 2 and self.messages[1]["role"] == "user":
+            elif len(self.messages) == 3 and self.messages[1]["role"] == "user":
                 logger.warn("user message exceed max_tokens. total_tokens={}".format(cur_tokens))
                 break
             else:
@@ -58,15 +58,24 @@ def num_tokens_from_messages(messages, model):
     """Returns the number of tokens used by a list of messages."""
     import tiktoken
 
-    try:
-        encoding = tiktoken.encoding_for_model(model)
-    except KeyError:
-        logger.debug("Warning: model not found. Using cl100k_base encoding.")
-        encoding = tiktoken.get_encoding("cl100k_base")
+    # try:
+    #     encoding = tiktoken.encoding_for_model(model)
+    # except KeyError:
+    #     logger.debug("Warning: model not found. Using cl100k_base encoding.")
+    #     encoding = tiktoken.get_encoding("cl100k_base")
     if model == "ernie_bot_turbo":
-        return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301")
-    elif model == "gpt-4":
-        return num_tokens_from_messages(messages, model="gpt-4-0314")
+        # return num_tokens_from_messages(messages, model="ernie_bot_turbo")
+        num_tokens = 0
+        for message in messages:
+            num_tokens += tokens_per_message
+            for key, value in message.items():
+                num_tokens += len(value) # 文心一言ERNIE的token计算方式（1token对应1中文，对应1.3的英文）
+                if key == "name":
+                    num_tokens += tokens_per_name
+        num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+        return num_tokens
+    elif model == "ernie_bot":
+        return num_tokens_from_messages(messages, model="ernie_bot")
     elif model == "gpt-3.5-turbo-0301":
         tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
         tokens_per_name = -1  # if there's a name, the role is omitted
@@ -80,7 +89,8 @@ def num_tokens_from_messages(messages, model):
     for message in messages:
         num_tokens += tokens_per_message
         for key, value in message.items():
-            num_tokens += len(encoding.encode(value))
+            # num_tokens += len(encoding.encode(value))  # ChatGPT的token计算方式
+            num_tokens += len(value) # 文心一言ERNIE的token计算方式
             if key == "name":
                 num_tokens += tokens_per_name
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
