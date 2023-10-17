@@ -30,14 +30,14 @@ class BaiduErnieSession(Session):
         while cur_tokens > max_tokens:  # 如果当前聊天记录token总数大于指定token总数
             if len(self.messages) > 3:  # 如果历史消息条数大于3
                 self.messages.pop(2)  # 把第2条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
-            elif len(self.messages) == 2 and self.messages[1]["role"] == "assistant":
+            elif len(self.messages) == 2 and self.messages[2]["role"] == "assistant":    # 如果历史消息条数等于3
                 self.messages.pop(2)
                 if precise:
                     cur_tokens = self.calc_tokens()
                 else:
                     cur_tokens = cur_tokens - max_tokens
                 break
-            elif len(self.messages) == 3 and self.messages[1]["role"] == "user":
+            elif len(self.messages) == 3 and self.messages[2]["role"] == "user":
                 logger.warn("user message exceed max_tokens. total_tokens={}".format(cur_tokens))
                 break
             else:
