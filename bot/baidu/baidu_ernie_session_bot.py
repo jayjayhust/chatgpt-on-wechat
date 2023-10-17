@@ -39,6 +39,7 @@ logger.debug("pinecone index connected!")
 
 ### Query Index
 def search_docs(query):
+    # 这部分逻辑将来也要替换成国内大模型的Embedding接口
     xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
     res = index.query([xq], top_k=5, include_metadata=True)
     chosen_text = []
