@@ -19,10 +19,10 @@ class Session(object):
             system_item = {"role": "user", "content": self.system_prompt}
             self.messages = [system_item]
             system_item = {"role": "assistant", "content": "好的，我记住了。"}
-            self.messages.append = [system_item]
-
-        system_item = {"role": role, "content": self.system_prompt}
-        self.messages = [system_item]
+            self.messages.append(system_item)
+        else:
+            system_item = {"role": role, "content": self.system_prompt}
+            self.messages = [system_item]
 
     def set_system_prompt(self, system_prompt):
         self.system_prompt = system_prompt
