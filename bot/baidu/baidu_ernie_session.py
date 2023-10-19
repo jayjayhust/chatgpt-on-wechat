@@ -30,8 +30,10 @@ class BaiduErnieSession(Session):
         while cur_tokens > max_tokens:  # 如果当前聊天记录token总数大于指定token总数
             if len(self.messages) > 3:  # 如果历史消息条数大于3
                 # 因为文心一言的逻辑，需要类似[user][assistant][user]这样的奇数条数。所以需要成对删除
-                self.messages.pop(2)  # 把第2条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
-                self.messages.pop(2)  # 把第3条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
+                if self.messages[2]["role"] == "user":
+                    self.messages.pop(2)  # 把第2条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
+                if self.messages[2]["role"] == "assistant":
+                    self.messages.pop(2)  # 把第3条数据剔除出列表（第0条和第1条是机器人人设：见session_manager.py）
             # elif len(self.messages) == 2 and self.messages[2]["role"] == "assistant":    # 如果历史消息条数等于3
             #     self.messages.pop(2)
             #     if precise:
@@ -39,7 +41,7 @@ class BaiduErnieSession(Session):
             #     else:
             #         cur_tokens = cur_tokens - max_tokens
             #     break
-            elif len(self.messages) == 3 and self.messages[2]["role"] == "user":
+            elif len(self.messages) == 3 and self.messages[2]["role"] == "user": # 如果只剩最后3条消息，前两条为角色人设，第3条为用户问询，则已经删无可删了
                 logger.warn("user message exceed max_tokens. total_tokens={}".format(cur_tokens))
                 break
             else:
