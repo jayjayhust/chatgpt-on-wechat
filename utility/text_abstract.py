@@ -181,5 +181,6 @@ class text_abstract(object):
             
             response = requests.request("POST", url, headers=headers, data=payload)
             if response:
-                return "以下回复来自文心一言(ERNIE)：" + response.json()["result"]
+                # return "以下回复来自文心一言(ERNIE)：" + response.json()["result"]
+                return response.json()["result"]
 

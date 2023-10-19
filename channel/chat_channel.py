@@ -338,7 +338,12 @@ class ChatChannel(Channel):
 
                     url = context["content"]
                     text = self.text_abstract_inst.get_web_text(url)
-                    if(len(text) > 8000):
+                    if (conf().get("model", "") == "gpt-3.5-turbo-16k") and (len(text) > 8000):
+                        logger.debug('Text in this shared link is too long!')
+                        reply.type = ReplyType.TEXT
+                        reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
+                        return reply
+                    elif (conf().get("model", "") == "ernie_bot_turbo") and (len(text) > 6500):
                         logger.debug('Text in this shared link is too long!')
                         reply.type = ReplyType.TEXT
                         reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
