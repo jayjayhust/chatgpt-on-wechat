@@ -16,6 +16,7 @@ class Session(object):
     def reset(self):
         role = "system"
         if conf().get("model", "") == "ernie_bot_turbo":
+            # 建立角色的初始人设
             system_item = {"role": "user", "content": self.system_prompt}
             self.messages = [system_item]
             system_item = {"role": "assistant", "content": "好的，我记住了。"}
