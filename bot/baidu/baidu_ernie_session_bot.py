@@ -118,7 +118,7 @@ class BaiduErnieSessionBot(Bot):
 
     def reply(self, query, context=None):
         # acquire reply content
-        if context.type == ContextType.TEXT:
+        if context.type == ContextType.TEXT:  # 文本问答
             logger.info("[ERNIE] query={}".format(query))
             session_id = context["session_id"]
             reply = None  # 初始化reply
@@ -158,12 +158,12 @@ class BaiduErnieSessionBot(Bot):
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
             elif reply_content["completion_tokens"] > 0:
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
-                reply = Reply(ReplyType.TEXT, reply_content["content"])
+                reply = Reply(ReplyType.TEXT, reply_content["content"], reply_content["completion_tokens"])
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
             return reply
-        # elif context.type == ContextType.IMAGE_CREATE:
+        # elif context.type == ContextType.IMAGE_CREATE:  # 图片生成
         #     ok, retstring = self.create_img(query, 0)
         #     reply = None
         #     if ok:
