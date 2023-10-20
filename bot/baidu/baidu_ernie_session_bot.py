@@ -52,6 +52,8 @@ def search_docs(query):
     # include_metadata: bool | None = None,
     # sparse_vector: SparseValues | Dict[str, List[float] | List[int]] | None = None,
     # **kwargs: Any
+    # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
+    # (logic reserved here=======================================)
     res = index.query([xq], top_k=5, include_metadata=True)
     chosen_text = []
     # for match in res['matches']:  # 遍历查询的结果
