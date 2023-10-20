@@ -52,8 +52,6 @@ def search_docs(query):
     # include_metadata: bool | None = None,
     # sparse_vector: SparseValues | Dict[str, List[float] | List[int]] | None = None,
     # **kwargs: Any
-    # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
-    # (logic reserved here=======================================)
     res = index.query([xq], top_k=5, include_metadata=True)
     chosen_text = []
     # for match in res['matches']:  # 遍历查询的结果
@@ -137,6 +135,11 @@ class BaiduErnieSessionBot(Bot):
             if reply:  # 如果是指令，直接回复
                 return reply
             if self.use_vector_db:
+                # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
+                # (logic reserved here=======================================)
+                group_chat_name = context["msg"].other_user_nickname
+                group_chat_id = context["msg"].other_user_id
+                
                 # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
                 prompt = construct_prompt(query)
             else:
