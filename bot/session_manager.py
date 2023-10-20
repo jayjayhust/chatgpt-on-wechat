@@ -17,9 +17,9 @@ class Session(object):
         role = "system"
         if conf().get("model", "") == "ernie_bot_turbo":
             # 建立角色的初始人设
-            system_item = {"role": "user", "content": self.system_prompt}
+            system_item = {"role": "user", "content": "你是谁？"}
             self.messages = [system_item]
-            system_item = {"role": "assistant", "content": "好的，我记住了。"}
+            system_item = {"role": "assistant", "content": self.system_prompt}
             self.messages.append(system_item)
         else:
             system_item = {"role": role, "content": self.system_prompt}

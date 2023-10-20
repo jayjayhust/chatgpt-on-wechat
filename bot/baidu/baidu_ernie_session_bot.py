@@ -114,6 +114,7 @@ class BaiduErnieSessionBot(Bot):
             # "request_timeout": conf().get("request_timeout", None),  # 请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
             # "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
         }
+        self.use_vector_db = conf().get("baidu_ernie_access_key") or False
 
     def reply(self, query, context=None):
         # acquire reply content
@@ -133,8 +134,12 @@ class BaiduErnieSessionBot(Bot):
                 reply = Reply(ReplyType.INFO, "配置已更新")
             if reply:  # 如果是指令，直接回复
                 return reply
-            # 在这里重组query(加载pinecone专家库，先进行专家库检索)
-            prompt = construct_prompt(query)
+            if self.use_vector_db:
+                # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
+                prompt = construct_prompt(query)
+            else:
+                # 不加载向量数据库
+                prompt = query
             logger.debug(prompt)
             
             session = self.sessions.session_query(prompt, session_id)
