@@ -106,6 +106,6 @@ class ChatGLMBot(Bot):
         else:
             reply = Reply(
                 ReplyType.TEXT,
-                str('对不起，出错了，错误信息为：' + str(response['code']) + '，错误信息为：' + response['msg']),
+                str('对不起，出错了，错误代码为：' + str(response['code']) + '，错误信息为：' + response['msg']),
             )
             return reply

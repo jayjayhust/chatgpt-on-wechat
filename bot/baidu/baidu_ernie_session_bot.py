@@ -114,7 +114,7 @@ class BaiduErnieSessionBot(Bot):
             # "request_timeout": conf().get("request_timeout", None),  # 请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
             # "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
         }
-        self.use_vector_db = conf().get("baidu_ernie_access_key") or False
+        self.use_vector_db = conf().get("use_vector_db") or False
 
     def reply(self, query, context=None):
         # acquire reply content

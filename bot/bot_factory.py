@@ -27,8 +27,10 @@ def create_bot(bot_type):
     elif bot_type == const.CHATGLM:
         # ChatGLM对话接口
         from bot.chatglm.chat_glm_bot import ChatGLMBot
+        from bot.chatglm.chat_glm_session_bot import ChatGLMSessionBot
 
-        return ChatGLMBot()
+        # return ChatGLMBot()
+        return ChatGLMSessionBot()
 
     elif bot_type == const.OPEN_AI:
         # OpenAI 官方对话模型API

@@ -15,7 +15,7 @@ class Session(object):
     # 重置会话
     def reset(self):
         role = "system"
-        if conf().get("model", "") == "ernie_bot_turbo":
+        if conf().get("model", "") == "ernie_bot_turbo" or conf().get("model", "") == "chatglm_pro":
             # 建立角色的初始人设
             system_item = {"role": "user", "content": "你是谁？"}
             self.messages = [system_item]
