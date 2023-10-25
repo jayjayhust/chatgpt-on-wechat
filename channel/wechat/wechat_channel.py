@@ -222,15 +222,15 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
 
     # 统一的发送函数，每个Channel自行实现，根据reply的type字段发送不同类型的消息
     def send(self, reply: Reply, context: Context):
-        receiver = context["receiver"]
-        if reply.type == ReplyType.TEXT:
-            itchat.send(reply.content, toUserName=receiver)
+        receiver = context["receiver"]  # 提取消息收取对象的信息（单聊是用户id？群聊是群id？还是都是用户id，只是单聊和群聊中的用户id不相同而已？）
+        if reply.type == ReplyType.TEXT:  # 文字回复
+            itchat.send(reply.content, toUserName=receiver)  # 调用itchat接口发送文本消息
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
         elif reply.type == ReplyType.ERROR or reply.type == ReplyType.INFO:
-            itchat.send(reply.content, toUserName=receiver)
+            itchat.send(reply.content, toUserName=receiver)  # 调用itchat接口发送文本消息
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
-        elif reply.type == ReplyType.VOICE:
-            itchat.send_file(reply.content, toUserName=receiver)
+        elif reply.type == ReplyType.VOICE:  # 语音回复
+            itchat.send_file(reply.content, toUserName=receiver)  # 调用itchat接口发送语音消息
             logger.info("[WX] sendFile={}, receiver={}".format(reply.content, receiver))
         elif reply.type == ReplyType.IMAGE_URL:  # 从网络下载图片
             img_url = reply.content
@@ -239,10 +239,10 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             for block in pic_res.iter_content(1024):
                 image_storage.write(block)
             image_storage.seek(0)
-            itchat.send_image(image_storage, toUserName=receiver)
+            itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
             logger.info("[WX] sendImage url={}, receiver={}".format(img_url, receiver))
         elif reply.type == ReplyType.IMAGE:  # 从文件读取图片
             image_storage = reply.content
             image_storage.seek(0)
-            itchat.send_image(image_storage, toUserName=receiver)
+            itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
             logger.info("[WX] sendImage, receiver={}".format(receiver))

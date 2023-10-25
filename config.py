@@ -40,14 +40,15 @@ available_setting = {
     "group_name_keyword_white_list": [],  # 开启自动回复的群名称关键词列表
     "group_name_share_text_abstract_white_list": [],  # 开启微信分享文章摘要提取功能的群名称列表
     "group_chat_in_one_session": ["ChatGPT测试群"],  # 支持会话上下文共享的群名称
-    "group_chat_using_private_vector_db": [{"阿图巴巴奥里给": "hn_cs_company_yilin"}],  # 使用私有数据库(群名和对应的私有库namespace)
+    "group_chat_using_private_vector_db": [{"测试群1": "namespace_test_vector_db"}],  # 使用私有数据库(群名和对应的私有库namespace)
+    "group_chat_name_and_id_list": [{"测试群1": "12345"}],  # 保存群聊名称与群聊id的关系，便于使能阿图的群进行消息群发
     "trigger_by_self": False,  # 是否允许机器人触发
     "image_create_prefix": ["画", "看", "找"],  # 开启图片回复的前缀
     "concurrency_in_session": 1,  # 同一会话最多有多少条消息在处理中，大于1可能乱序
     "image_create_size": "256x256",  # 图片大小,可选有 256x256, 512x512, 1024x1024
     # chatgpt会话参数
     "expires_in_seconds": 3600,  # 无操作会话的过期时间，单位秒
-    "character_desc": "你是ChatGPT, 一个由OpenAI训练的大型语言模型, 你旨在回答并解决人们的任何问题，并且可以使用多种语言与人交流。",  # 人格描述
+    "character_desc": "你是阿图，一个由益邻训练的大语言模型，你旨在回答并解决人们的任何问题，并且可以使用多种语言与人交流。",  # 人格描述
     "conversation_max_tokens": 1000,  # 支持上下文记忆的最多字符数
     # chatgpt限流配置
     "rate_limit_chatgpt": 20,  # chatgpt的调用频率限制

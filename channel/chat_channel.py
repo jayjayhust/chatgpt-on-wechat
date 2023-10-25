@@ -68,8 +68,8 @@ class ChatChannel(Channel):
                 if ctype == ContextType.TEXT:  # 群聊文本（前置，防止被白名单过滤）
                     # 记录所有的群聊文本信息(有个问题就是自己发送的信息，即使加了@，也不会被认为is_at是true!!!)
                     dict1 = {}
-                    dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
-                    dict1['group_chat_id'] = context["msg"].other_user_id
+                    dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性（群名称）
+                    dict1['group_chat_id'] = context["msg"].other_user_id  # 取WechatMessage类中的实例属性（群id）
                     dict1['msg_type'] = 'TEXT'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
                     dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
                     # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
@@ -428,8 +428,10 @@ class ChatChannel(Channel):
                     dict1['bot_id'] = self.user_id
                     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
+    # 发送微信消息
     def _send(self, reply: Reply, context: Context, retry_cnt=0):
         try:
+            # send的具体实现，定义在类似wechat_channel.py中的具体实例类中
             self.send(reply, context)
         except Exception as e:
             logger.error("[WX] sendMsg error: {}".format(str(e)))
