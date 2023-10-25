@@ -222,7 +222,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
 
     # 统一的发送函数，每个Channel自行实现，根据reply的type字段发送不同类型的消息
     def send(self, reply: Reply, context: Context):
-        receiver = context["receiver"]  # 提取消息收取对象的信息（单聊是用户id？群聊是群id？还是都是用户id，只是单聊和群聊中的用户id不相同而已？）
+        receiver = context["receiver"]  # 提取消息收取对象的信息（群聊的id：UserName）
         if reply.type == ReplyType.TEXT:  # 文字回复
             itchat.send(reply.content, toUserName=receiver)  # 调用itchat接口发送文本消息
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
