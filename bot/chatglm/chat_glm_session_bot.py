@@ -201,15 +201,18 @@ class ChatGLMSessionBot(Bot):
             response = zhipuai.model_api.invoke(
                 # model="chatglm_lite",  # ChatGLM-6B(https://open.bigmodel.cn/doc/api#chatglm_lite)
                 # model="chatglm_std",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_std)
-                model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
+                # model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
+                model=conf().get("model") or "chatglm_turbo",
                 prompt=session.messages,
                 top_p=0.7,
                 temperature=0.9,
             )
-            # response形如：{'code': 200, 'msg': '操作成功', 'data': {'request_id': '7789510777205483785', 'task_id': '7789510777205483785', 
-            # 'task_status': 'SUCCESS', 'choices': [{'role': 'assistant', 'content': '" 我是一个名为 ChatGLM 的人工智能助手，是基于清华大学 KEG 
-            # 实验室和智谱 AI 公司于 2023 年共同训练的语言模型开发的。我的任务是针对用户的问题和要求提供适当的答复和支持。"'}], 'usage': {'total_tokens': 50}}, 
-            # 'success': True}
+            # response形如：
+            # {'code': 200, 'msg': '操作成功', 'data': {'request_id': '8065132984818443914', 
+            # 'task_id': '8065132984818443914', 'task_status': 'SUCCESS', 'choices': [{'role': 'assistant', 
+            # 'content': '" 我是一个名为智谱清言的人工智能助手，可以叫我小智🤖，是基于清华大学 KEG 实验室和智谱 AI 公司于 2023 
+            # 年共同训练的语言模型开发的。我的任务是针对用户的问题和要求提供适当的答复和支持。"'}], 
+            # 'usage': {'prompt_tokens': 3, 'completion_tokens': 53, 'total_tokens': 56}}, 'success': True}
             # or:
             # {'code': 1261, 'msg': 'Prompt 超长', 'success': False}
             logger.debug(response)
