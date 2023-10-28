@@ -15,11 +15,12 @@ class Session(object):
     # 重置会话
     def reset(self):
         role = "system"
-        if conf().get("model", "") == "ernie_bot_turbo" or conf().get("model", "") == "chatglm_pro":
+        if conf().get("model", "") == "ernie_bot_turbo" or conf().get("model", "") == "chatglm_turbo":
             # 建立角色的初始人设
             system_item = {"role": "user", "content": "你是谁？"}
             self.messages = [system_item]
-            system_item = {"role": "assistant", "content": self.system_prompt}
+            # system_item = {"role": "assistant", "content": self.system_prompt}
+            system_item = {"role": "assistant", "content": conf().get("self_desc", "")}
             self.messages.append(system_item)
         else:
             system_item = {"role": role, "content": self.system_prompt}

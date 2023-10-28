@@ -73,9 +73,10 @@ def load_login_status(self, fileDir,
                     update_local_chatrooms(self, [contact])
                 else:
                     update_local_friends(self, [contact])
-        if msgList:
-            msgList = produce_msg(self, msgList)
-            for msg in msgList: self.msgList.put(msg)
+        # 历史消息再次加载？不需要，把这部分逻辑禁掉！
+        # if msgList:
+        #     msgList = produce_msg(self, msgList)
+        #     for msg in msgList: self.msgList.put(msg)
         self.start_receiving(exitCallback)
         logger.debug('loading login status succeeded.')
         if hasattr(loginCallback, '__call__'):
