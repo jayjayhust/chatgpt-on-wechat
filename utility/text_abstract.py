@@ -126,13 +126,14 @@ class text_abstract(object):
             )
           
             return res.choices[0].message.content
-        if model_type in ["chatglm_pro", "chatglm_std", "chatglm_lite"]:
+        if model_type in ["chatglm_pro", "chatglm_std", "chatglm_lite", "chatglm_turbo"]:
             # return "Hi, 我是智谱AI(GhatGLM)文摘小助手，还在开发中哟，敬请期待~"
             zhipuai.api_key = conf().get("zhipu_api_key")
             response = zhipuai.model_api.invoke(
                 # model="chatglm_lite",  # ChatGLM-6B(https://open.bigmodel.cn/doc/api#chatglm_lite)
                 # model="chatglm_std",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_std)
-                model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
+                # model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
+                model=conf().get("model") or "chatglm_turbo",
                 prompt=[
                     {"role": "user", "content": "你是谁"},  # - user 指用户角色输入的信息
                     {"role": "assistant", "content": conf().get("character_desc")},  # - assistant 指模型返回的信息
@@ -140,16 +141,18 @@ class text_abstract(object):
                 top_p=0.7,
                 temperature=0.9,
             )
-            # response形如：{'code': 200, 'msg': '操作成功', 'data': {'request_id': '7789510777205483785', 'task_id': '7789510777205483785', 
-            # 'task_status': 'SUCCESS', 'choices': [{'role': 'assistant', 'content': '" 我是一个名为 ChatGLM 的人工智能助手，是基于清华大学 KEG 
-            # 实验室和智谱 AI 公司于 2023 年共同训练的语言模型开发的。我的任务是针对用户的问题和要求提供适当的答复和支持。"'}], 'usage': {'total_tokens': 50}}, 
-            # 'success': True}
+            # response形如：
+            # {'code': 200, 'msg': '操作成功', 'data': {'request_id': '8065132984818443914', 
+            # 'task_id': '8065132984818443914', 'task_status': 'SUCCESS', 'choices': [{'role': 'assistant', 
+            # 'content': '" 我是一个名为智谱清言的人工智能助手，可以叫我小智🤖，是基于清华大学 KEG 实验室和智谱 AI 公司于 2023 
+            # 年共同训练的语言模型开发的。我的任务是针对用户的问题和要求提供适当的答复和支持。"'}], 
+            # 'usage': {'prompt_tokens': 3, 'completion_tokens': 53, 'total_tokens': 56}}, 'success': True}
             # or:
             # {'code': 1261, 'msg': 'Prompt 超长', 'success': False}
             logger.debug(response)
 
             if response['code'] == 200:
-                return "以下回复来自智谱AI(GhatGLM)：" + str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '')
+                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '')
         if model_type in ["ernie_bot", "ernie_bot_turbo"]:
             # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
             access_key = conf().get("baidu_ernie_access_key")
