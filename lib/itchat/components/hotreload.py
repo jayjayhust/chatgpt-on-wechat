@@ -73,7 +73,7 @@ def load_login_status(self, fileDir,
                     update_local_chatrooms(self, [contact])
                 else:
                     update_local_friends(self, [contact])
-        # 历史消息再次加载？不需要，把这部分逻辑禁掉！
+        # 最近存在队列中的历史消息再次加载？不需要，会触发阿图的意外回复，所以要把这部分逻辑禁掉！！！
         # if msgList:
         #     msgList = produce_msg(self, msgList)
         #     for msg in msgList: self.msgList.put(msg)

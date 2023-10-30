@@ -6,7 +6,8 @@ from bridge.reply import Reply, ReplyType
 from channel.chat_message import ChatMessage
 from common.log import logger
 from plugins import *
-
+from config import conf, get_appdata_dir
+import random
 
 @plugins.register(
     name="Hello",
@@ -30,14 +31,20 @@ class Hello(Plugin):
         ]:
             return
 
-        if e_context["context"].type == ContextType.JOIN_GROUP:
+        if e_context["context"].type == ContextType.JOIN_GROUP:  # 有新成员入群，欢迎新成员
             e_context["context"].type = ContextType.TEXT
             msg: ChatMessage = e_context["context"]["msg"]
-            e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
+            # e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
+            user_guidances = conf().get("user_guidance", [])
+            if len(user_guidances) == 0:
+                e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
+            else:
+                user_guidance = user_guidances[random.randint(0, len(user_guidances) - 1)]
+                e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊，结尾再加上这句使用指南：' + user_guidance
             e_context.action = EventAction.CONTINUE  # 事件继续，交付给下个插件或默认逻辑
             return
 
-        if e_context["context"].type == ContextType.PATPAT:
+        if e_context["context"].type == ContextType.PATPAT:  # 有人拍一拍自己
             e_context["context"].type = ContextType.TEXT
             msg: ChatMessage = e_context["context"]["msg"]
             e_context["context"].content = f"请你随机使用一种风格介绍你自己，并告诉用户输入#help可以查看帮助信息。"

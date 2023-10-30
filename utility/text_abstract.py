@@ -152,7 +152,7 @@ class text_abstract(object):
             logger.debug(response)
 
             if response['code'] == 200:
-                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '')
+                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n', '')
         if model_type in ["ernie_bot", "ernie_bot_turbo"]:
             # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
             access_key = conf().get("baidu_ernie_access_key")
