@@ -103,7 +103,7 @@ def get_token():
     return response.json().get("access_token")
 
 # Zhipu ChatGLM对话接口 
-class ChatGLMSessionBot(Bot):
+class ChatGLMSessionBot(Bot,BaiduErnieImage):
     def __init__(self):
         super().__init__()
 
@@ -172,14 +172,14 @@ class ChatGLMSessionBot(Bot):
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[ChatGLM] reply {} used 0 tokens.".format(reply_content))
             return reply
-        # elif context.type == ContextType.IMAGE_CREATE:  # 图片生成
-        #     ok, retstring = self.create_img(query, 0)
-        #     reply = None
-        #     if ok:
-        #         reply = Reply(ReplyType.IMAGE, retstring)
-        #     else:
-        #         reply = Reply(ReplyType.ERROR, retstring)
-        #     return reply
+        elif context.type == ContextType.IMAGE_CREATE:  # 图片生成
+            ok, retstring = self.create_img(query, 0)
+            reply = None
+            if ok:
+                reply = Reply(ReplyType.IMAGE_BASE64, retstring)
+            else:
+                reply = Reply(ReplyType.ERROR, retstring)
+            return reply
         else:
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
