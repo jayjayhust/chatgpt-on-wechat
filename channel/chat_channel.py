@@ -538,6 +538,13 @@ class ChatChannel(Channel):
     def send_heartbeat(self):
         while True:
             if self.mqtt_client_inst.client.is_connected:
+                # from lib import itchat
+                # # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
+                # target_rooms = itchat.search_chatrooms(name='阿图巴巴奥力给')
+                # logger.debug("chat group '阿图巴巴奥力给' search info: {}".format(target_rooms))
+                # if target_rooms and len(target_rooms) > 0:
+                #     target_rooms[0].send_msg('hi，我是赛博涛哥，准时1分钟骚扰一次大家哦~')
+
                 dict1 = {}
                 dict1['status'] = 'online'
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
