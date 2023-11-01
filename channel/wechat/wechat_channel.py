@@ -259,7 +259,8 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
             logger.info("[WX] sendImage, receiver={}".format(receiver))
         elif reply.type == ReplyType.IMAGE_BASE64:  # 从读取图片BASE64格式
-            image = base64.b64decode(reply.content, altchars=None, validate=False)
+            # 参考示例：https://blog.csdn.net/m0_46825740/article/details/127869841
+            image = base64.b64decode(reply.content, altchars=None, validate=False)  
             image_storage = BytesIO(image)
             image_storage.seek(0)
             itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
