@@ -8,6 +8,7 @@ class ReplyType(Enum):
     VOICE = 2  # 音频文件
     IMAGE = 3  # 图片文件
     IMAGE_URL = 4  # 图片URL
+    IMAGE_BASE64 = 5  # 图片数据（BASE64）
 
     INFO = 9
     ERROR = 10

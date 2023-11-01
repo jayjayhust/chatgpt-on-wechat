@@ -1,5 +1,6 @@
 # encoding:utf-8
-# REF URL: https://cloud.baidu.com/doc/WENXINWORKSHOP/s/4lilb2lpf
+# REF URL（文本chat）: 
+# REF URL（图片生成）: https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Klkqubb9w
 
 import zhipuai
 import time
@@ -19,6 +20,8 @@ import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
 from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
 import os
 from common.log import logger
+
+from bot.baidu.baidu_ernie_image import BaiduErnieImage
 
 ### init pinecone configuration
 pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
@@ -173,7 +176,7 @@ class ChatGLMSessionBot(Bot):
         #     ok, retstring = self.create_img(query, 0)
         #     reply = None
         #     if ok:
-        #         reply = Reply(ReplyType.IMAGE_URL, retstring)
+        #         reply = Reply(ReplyType.IMAGE, retstring)
         #     else:
         #         reply = Reply(ReplyType.ERROR, retstring)
         #     return reply

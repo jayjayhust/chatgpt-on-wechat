@@ -4,6 +4,7 @@
 import time
 import requests
 import json
+from bot.baidu.baidu_ernie_image import BaiduErnieImage
 
 from bot.bot import Bot
 from bot.baidu.baidu_ernie_session import BaiduErnieSession
@@ -99,7 +100,7 @@ def get_token():
     return response.json().get("access_token")
 
 # Baidu ERNIE-Bot-turbo对话接口 
-class BaiduErnieSessionBot(Bot):
+class BaiduErnieSessionBot(Bot, BaiduErnieImage):
     def __init__(self):
         super().__init__()
 
@@ -168,14 +169,14 @@ class BaiduErnieSessionBot(Bot):
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
             return reply
-        # elif context.type == ContextType.IMAGE_CREATE:  # 图片生成
-        #     ok, retstring = self.create_img(query, 0)
-        #     reply = None
-        #     if ok:
-        #         reply = Reply(ReplyType.IMAGE_URL, retstring)
-        #     else:
-        #         reply = Reply(ReplyType.ERROR, retstring)
-        #     return reply
+        elif context.type == ContextType.IMAGE_CREATE:  # 图片生成（https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Klkqubb9w）
+            ok, retstring = self.create_img(query, 0)
+            reply = None
+            if ok:
+                reply = Reply(ReplyType.IMAGE_BASE64, retstring)
+            else:
+                reply = Reply(ReplyType.ERROR, retstring)
+            return reply
         else:
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply

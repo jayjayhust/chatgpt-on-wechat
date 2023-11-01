@@ -25,6 +25,7 @@ try:
 except Exception as e:
     pass
 
+
 md = hashlib.md5() # 获取一个md5加密算法对象
 
 # 抽象类, 它包含了与消息通道无关的通用处理逻辑
@@ -46,6 +47,9 @@ class ChatChannel(Channel):
         _thread = threading.Thread(target=self.consume)
         _thread.setDaemon(True)
         _thread.start()
+        _thread_send_heartbeat = threading.Thread(target=self.send_heartbeat)
+        _thread_send_heartbeat.setDaemon(True)
+        _thread_send_heartbeat.start()
 
     # 根据消息构造context，消息内容相关的触发项写在这里
     def _compose_context(self, ctype: ContextType, content, **kwargs):
@@ -529,7 +533,15 @@ class ChatChannel(Channel):
                 if cnt > 0:
                     logger.info("Cancel {} messages in session {}".format(cnt, session_id))
                 self.sessions[session_id][0] = Dequeue()
-
+    
+    # 发送心跳消息给服务器，单独线程
+    def send_heartbeat(self):
+        while True:
+            if self.mqtt_client_inst.client.is_connected:
+                dict1 = {}
+                dict1['status'] = 'online'
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
+            time.sleep(60.0)  # 休眠60秒
 
 def check_prefix(content, prefix_list):
     if not prefix_list:

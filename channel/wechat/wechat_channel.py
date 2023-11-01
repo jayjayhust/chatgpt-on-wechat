@@ -26,6 +26,9 @@ from lib.itchat.content import *
 from plugins import *
 from utility.mac_derive import mac_derive
 
+import base64
+from io import BytesIO
+from PIL import Image
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
@@ -113,6 +116,15 @@ def qrCallback(uuid, status, qrcode):
             logger.info("wlan_mac: {}".format(wlan_mac))
         else:
             logger.info("wlan_mac is not available")
+
+
+# 输入为base64格式字符串，输出为PIL格式图片
+def base64_to_image(base64_str):
+    image = base64.b64decode(base64_str, altchars=None, validate=False)
+    image = BytesIO(image)
+    image = Image.open(image)
+    return image
+
 
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
 @singleton
@@ -246,3 +258,9 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             image_storage.seek(0)
             itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
             logger.info("[WX] sendImage, receiver={}".format(receiver))
+        elif reply.type == ReplyType.IMAGE_BASE64:  # 从读取图片BASE64格式
+            image = base64.b64decode(reply.content, altchars=None, validate=False)
+            image_storage = BytesIO(image)
+            image_storage.seek(0)
+            itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
+            logger.info("[WX] sendImage base64, receiver={}".format(receiver))
