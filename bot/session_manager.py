@@ -19,7 +19,6 @@ class Session(object):
             # 建立角色的初始人设
             system_item = {"role": "user", "content": "你是谁？"}
             self.messages = [system_item]
-            # system_item = {"role": "assistant", "content": self.system_prompt}
             system_item = {"role": "assistant", "content": conf().get("self_desc", "")}
             self.messages.append(system_item)
         else:

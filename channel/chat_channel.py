@@ -354,7 +354,7 @@ class ChatChannel(Channel):
                         reply.type = ReplyType.TEXT
                         reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
                         return reply
-                    elif (conf().get("model", "") == "chatglm_turbo") and (len(text) > 32000):
+                    elif (conf().get("model", "") == "chatglm_turbo") and (len(text) > 32000):  # 模型长度限制：https://open.bigmodel.cn/pricing
                         logger.debug('Text in this shared link is too long!')
                         reply.type = ReplyType.TEXT
                         reply.content = '抱歉，您分享的文章内容过长，暂时无法生成摘要。敬请期待我的能力升级吧，阿图fighting~'
