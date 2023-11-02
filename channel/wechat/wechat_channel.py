@@ -117,14 +117,6 @@ def qrCallback(uuid, status, qrcode):
             logger.info("wlan_mac is not available")
 
 
-# 输入为base64格式字符串，输出为PIL格式图片
-def base64_to_image(base64_str):
-    image = base64.b64decode(base64_str, altchars=None, validate=False)
-    image = BytesIO(image)
-    image = Image.open(image)
-    return image
-
-
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
 @singleton
 class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
