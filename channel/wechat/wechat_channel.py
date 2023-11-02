@@ -260,8 +260,17 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             logger.info("[WX] sendImage, receiver={}".format(receiver))
         elif reply.type == ReplyType.IMAGE_BASE64:  # 从读取图片BASE64格式
             # 参考示例：https://blog.csdn.net/m0_46825740/article/details/127869841
-            image = base64.b64decode(reply.content, altchars=None, validate=False)  
-            image_storage = BytesIO(image)
-            image_storage.seek(0)
+            image = base64.b64decode(reply.content, altchars=None, validate=False)  # reply.content形如"/9j/4AAQSkZJRg..."
+            # method 1:
+            # image_storage = BytesIO(image)
+            # image_storage.seek(0)
+            # itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
+            # method 2:
+            import hashlib
+            uid = hashlib.md5(str(reply.content).encode()).hexdigest()  # 根据图片文件内容做md5计算，获得唯一id
+            file_path = './tmp/' + uid + '.jpg'  # 根目录下的tmp文件夹
+            with open(file_path, mode='wb') as file:
+                file.write(image)
             itchat.send_image(image_storage, toUserName=receiver)  # 调用itchat接口发送图片
+            os.remove(file_path)  # 删除图片（图片路径为file_path）
             logger.info("[WX] sendImage base64, receiver={}".format(receiver))

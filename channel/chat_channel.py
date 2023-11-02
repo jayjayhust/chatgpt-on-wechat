@@ -402,7 +402,7 @@ class ChatChannel(Channel):
                     reply.content = reply_text
                 elif reply.type == ReplyType.ERROR or reply.type == ReplyType.INFO:
                     reply.content = "[" + str(reply.type) + "]\n" + reply.content
-                elif reply.type == ReplyType.IMAGE_URL or reply.type == ReplyType.VOICE or reply.type == ReplyType.IMAGE:
+                elif reply.type == ReplyType.IMAGE_URL or reply.type == ReplyType.VOICE or reply.type == ReplyType.IMAGE or reply.type == ReplyType.IMAGE_BASE64:
                     pass
                 else:
                     logger.error("[WX] unknown reply type: {}".format(reply.type))
@@ -538,12 +538,14 @@ class ChatChannel(Channel):
     def send_heartbeat(self):
         while True:
             if self.mqtt_client_inst.client.is_connected:
-                # from lib import itchat
-                # # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
-                # target_rooms = itchat.search_chatrooms(name='阿图巴巴奥力给')
-                # logger.debug("chat group '阿图巴巴奥力给' search info: {}".format(target_rooms))
-                # if target_rooms and len(target_rooms) > 0:
-                #     target_rooms[0].send_msg('hi，我是赛博涛哥，准时1分钟骚扰一次大家哦~')
+                from lib import itchat
+                import datetime
+                current_time = datetime.datetime.now().strftime("%H:%M:%S")
+                # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
+                target_rooms = itchat.search_chatrooms(name='阿图巴巴奥力给')
+                logger.debug("chat group '阿图巴巴奥力给' search info: {}".format(target_rooms))
+                if target_rooms and len(target_rooms) > 0 and ("08:59:28" <= current_time < "09:01:32"):
+                    target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午9点骚扰一次大家哦~')
 
                 dict1 = {}
                 dict1['status'] = 'online'
