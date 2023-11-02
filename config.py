@@ -41,7 +41,6 @@ available_setting = {
     "group_name_share_text_abstract_white_list": [],  # 开启微信分享文章摘要提取功能的群名称列表
     "group_chat_in_one_session": ["ChatGPT测试群"],  # 支持会话上下文共享的群名称
     "group_chat_using_private_vector_db": [{"测试群1": "namespace_test_vector_db"}],  # 使用私有数据库(群名和对应的私有库namespace)
-    "group_chat_name_and_id_list": [{"测试群1": "12345"}],  # 保存群聊名称与群聊id的关系，便于使能阿图的群进行消息群发
     "user_guidance": ["在本群，你可以随时@阿图 互动，例：@阿图 写一份社区闲置空间活化的方案。"],  # 用户使用小贴士
     "trigger_by_self": False,  # 是否允许机器人触发
     "image_create_prefix": ["画", "看", "找"],  # 开启图片回复的前缀
