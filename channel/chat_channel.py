@@ -97,7 +97,7 @@ class ChatChannel(Channel):
                     with open(file_path, "rb") as f:  # 转为二进制格式
                         base64_data = base64.b64encode(f.read())  # 使用base64进行加密，输出为bytes
                         str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
-                        logger.debug(str_base64)
+                        # logger.debug(str_base64)  # 打印图片数据
                         # 3. 通过MQTT将图片发送给数据接收服务器
                         dict1 = dict()
                         dict1 = {}
