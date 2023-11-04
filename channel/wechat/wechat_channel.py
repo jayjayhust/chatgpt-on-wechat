@@ -150,8 +150,8 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             statusStorageDir=status_path,
             qrCallback=qrCallback,  # method that should accept uuid, status, qrcode for usage
         )
-        self.user_id = itchat.instance.storageClass.userName
-        self.name = itchat.instance.storageClass.nickName
+        self.user_id = itchat.instance.storageClass.userName  # 获取微信用户的id
+        self.name = itchat.instance.storageClass.nickName  # 获取微信用户的昵称
         logger.info('*' * 100)
         logger.info("Wechat login success, user_id: {}, nickname: {}".format(self.user_id, self.name))
         # 登录完成后，把登录账号信息（微信昵称，微信id）及设备id也发送到后台（http post）

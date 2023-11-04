@@ -546,9 +546,22 @@ class ChatChannel(Channel):
                 logger.debug("chat group '阿图巴巴奥力给' search info: {}".format(target_rooms))
                 if target_rooms and len(target_rooms) > 0 and ("08:59:28" <= current_time < "09:01:32"):
                     target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午9点骚扰一次大家哦~')
-
+                    # 提取当日温馨小贴士，在群聊里发送
+                    year_month_day = datetime.datetime.now().strftime('%Y-%m-%d')  # 形如：2023-11-04
+                    group_daily_message_list = conf().get("group_daily_message", [])
+                    if len(group_daily_message_list) > 0:
+                        for tmp_dict in group_daily_message_list:
+                            for tmp_key in tmp_dict.keys():
+                                if tmp_key == year_month_day:
+                                    target_rooms[0].send_msg(tmp_dict[tmp_key])
+                                    break
+                
+                import datetime
                 dict1 = {}
-                dict1['status'] = 'online'
+                dict1['status'] = 'online'  # 状态
+                dict1['timestamp'] = str(int(datetime.datetime.now().timestamp()))  # 时间戳
+                dict1['bot_id'] = self.user_id
+                dict1['bot_name'] = self.name
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
             time.sleep(60.0)  # 休眠60秒
 
