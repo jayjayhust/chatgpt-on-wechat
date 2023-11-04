@@ -544,8 +544,8 @@ class ChatChannel(Channel):
                 # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
                 target_rooms = itchat.search_chatrooms(name='阿图巴巴测试群1')
                 logger.debug("chat group '阿图巴巴测试群1' search info: {}".format(target_rooms))
-                if target_rooms and len(target_rooms) > 0 and ("08:59:28" <= current_time < "09:01:32"):  # 设定触发时间
-                    target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午9点骚扰一次大家哦~')
+                if target_rooms and len(target_rooms) > 0 and ("10:59:28" <= current_time < "11:01:32"):  # 设定触发时间
+                    target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午骚扰一次大家哦~')
                     # 提取当日温馨小贴士，在群聊里发送
                     year_month_day = datetime.datetime.now().strftime('%Y-%m-%d')  # 形如：2023-11-04
                     group_daily_message_list = conf().get("group_daily_message", [])
