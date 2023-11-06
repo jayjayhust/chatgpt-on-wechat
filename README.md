@@ -22,6 +22,7 @@
 - [x] **在新群成员加入时，hello插件回复带自我介绍语料库的欢迎消息：** 
 - [x] **文心一言图片生成接口的调用：** 
 - [x] **在群聊白名单的群，定时发送群消息（带群消息语料库，且对应日期）：** 已测试
+- [ ] **添加wechaty python引擎的支持（https://github.com/Wechaty/python-wechaty/）：** 源工程已支持，不过需要配置channel_type和wechaty_puppet_service_token（申请地址：https://juzibot.com/）。过程可以参见app.py和channel_factory.py。待测试！
 - [ ] **通过MQTT与服务器通讯，订阅配置更新主题，更新本地配置文件：** 
 
 # 演示
