@@ -17,3 +17,4 @@ zhipuai
 psutil
 pinecone-client
 python-docx
+itchat-uos==1.5.0.dev0

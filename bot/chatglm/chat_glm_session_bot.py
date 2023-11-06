@@ -224,7 +224,8 @@ class ChatGLMSessionBot(Bot,BaiduErnieImage):
                 return {
                     "total_tokens": response["data"]["usage"]["total_tokens"],
                     "completion_tokens": response["data"]["usage"]["completion_tokens"],
-                    "content": str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n', '')
+                    # "content": str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n', '')
+                    "content": str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\\n\\n', '\n').replace('\\n', '\n')
                 }
             else:
                 return {

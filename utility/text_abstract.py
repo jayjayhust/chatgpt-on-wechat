@@ -113,7 +113,7 @@ class text_abstract(object):
         #   4. AI代理已经展现出了巨大潜力和市场，第一批能够可靠地执行多步骤任务并具备一定自主能力的系统将在一年内上市。 \
         #   5. 随着时间的推移，我们有望在不断优化和完善中见证这些AI代理为人类社会带来积极而深远的影响。 \
         #   原文共2485字，阅读需4分钟"
-        prompt = "你现在角色是一位阅读小助手，负责给一段文章生成摘要。请按照以上摘要模板，给下面这段文字，生成一段摘要300~500字左右，再生成一段文字列出文章中最重要的几点："
+        prompt = "你现在角色是一位阅读小助手，请给下面这段文字，生成一段200~300字左右的摘要，再生成一段100~200字左右的文字、列出文章中最重要的几点："
         prompt += "\n"
         prompt += query
         print(prompt)
@@ -136,7 +136,7 @@ class text_abstract(object):
                 model=conf().get("model") or "chatglm_turbo",
                 prompt=[
                     {"role": "user", "content": "你是谁"},  # - user 指用户角色输入的信息
-                    {"role": "assistant", "content": conf().get("character_desc")},  # - assistant 指模型返回的信息
+                    {"role": "assistant", "content": conf().get("self_desc")},  # - assistant 指模型返回的信息
                     {"role": "user", "content": prompt}],
                 top_p=0.7,
                 temperature=0.9,
@@ -152,7 +152,7 @@ class text_abstract(object):
             logger.debug(response)
 
             if response['code'] == 200:
-                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n', '')
+                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n\\n', '\n').replace('\\n', '\n')
         if model_type in ["ernie_bot", "ernie_bot_turbo"]:
             # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
             access_key = conf().get("baidu_ernie_access_key")
