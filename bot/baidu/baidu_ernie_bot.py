@@ -9,9 +9,9 @@ from bridge.reply import Reply, ReplyType
 from config import conf, load_config
 
 import openai
-import openai.error
+# import openai.error
 import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
-from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
+# from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
 import os
 from common.log import logger
 

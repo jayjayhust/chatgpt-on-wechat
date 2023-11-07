@@ -8,7 +8,7 @@ import random
 import os
 # import sys
 # import pinecone
-from openai.embeddings_utils import get_embedding
+# from openai.embeddings_utils import get_embedding
 # from tqdm import tqdm
 import os
 import openai
@@ -133,7 +133,7 @@ class text_abstract(object):
                 # model="chatglm_lite",  # ChatGLM-6B(https://open.bigmodel.cn/doc/api#chatglm_lite)
                 # model="chatglm_std",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_std)
                 # model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
-                model=conf().get("model") or "chatglm_turbo",
+                model="chatglm_turbo",
                 prompt=[
                     {"role": "user", "content": "你是谁"},  # - user 指用户角色输入的信息
                     {"role": "assistant", "content": conf().get("self_desc")},  # - assistant 指模型返回的信息

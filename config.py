@@ -26,7 +26,7 @@ available_setting = {
     "baidu_ernie_secret_key": "",  # ERNIE secret key
     "use_vector_db": False,  # 是否使用向量数据库（专有知识库）
     # chatgpt模型， 当use_azure_chatgpt为true时，其名称为Azure上model deployment名称
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-3.5-turbo",  # 大语言模型：gpt-3.5-turbo/chatglm_turbo/ernie_bot_turbo
     "use_azure_chatgpt": False,  # 是否使用azure的chatgpt
     "azure_deployment_id": "",  # azure 模型部署名称
     # Bot触发配置

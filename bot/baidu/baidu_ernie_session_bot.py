@@ -5,6 +5,7 @@ import time
 import requests
 import json
 from bot.baidu.baidu_ernie_image import BaiduErnieImage
+from bot.openai.open_ai_image import OpenAIImage
 
 from bot.bot import Bot
 from bot.baidu.baidu_ernie_session import BaiduErnieSession
@@ -14,9 +15,9 @@ from bridge.reply import Reply, ReplyType
 from config import conf, load_config
 
 import openai
-import openai.error
+# import openai.error
 import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
-from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
+# from openai.embeddings_utils import get_embedding  # pip install matplotlib pandas
 import os
 from common.log import logger
 
@@ -100,7 +101,8 @@ def get_token():
     return response.json().get("access_token")
 
 # Baidu ERNIE-Bot-turbo对话接口 
-class BaiduErnieSessionBot(Bot, BaiduErnieImage):
+# class BaiduErnieSessionBot(Bot, BaiduErnieImage):
+class BaiduErnieSessionBot(Bot, OpenAIImage):
     def __init__(self):
         super().__init__()
 
@@ -169,11 +171,19 @@ class BaiduErnieSessionBot(Bot, BaiduErnieImage):
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
             return reply
-        elif context.type == ContextType.IMAGE_CREATE:  # 图片生成（https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Klkqubb9w）
+        # elif context.type == ContextType.IMAGE_CREATE:  # 图片生成（https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Klkqubb9w）
+        #     ok, retstring = self.create_img(query, 0)
+        #     reply = None
+        #     if ok:
+        #         reply = Reply(ReplyType.IMAGE_BASE64, retstring)
+        #     else:
+        #         reply = Reply(ReplyType.ERROR, retstring)
+        #     return reply
+        elif context.type == ContextType.IMAGE_CREATE:
             ok, retstring = self.create_img(query, 0)
             reply = None
             if ok:
-                reply = Reply(ReplyType.IMAGE_BASE64, retstring)
+                reply = Reply(ReplyType.IMAGE_URL, retstring)
             else:
                 reply = Reply(ReplyType.ERROR, retstring)
             return reply
