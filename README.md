@@ -28,9 +28,11 @@ wechaty目前只支持企业微信，要复活itchat，需要用itchat-uos：htt
 pip config set global.index-url https://repo.huaweicloud.com/repository/pypi/simple
 pip config list
 pip install -U pip
+pip uninstall itchat  # 用的lib\itchat源文件工程，所以没啥用
 pip install itchat-uos==1.5.0.dev0
 ```
 - [x] **拯救itchat网页版微信登录不了的问题：** 见上一条，用itchat-uos拯救（https://pypi.org/project/itchat-uos-fix/）。
+- [ ] **添加心跳包，反应程序状态和账号状态：** 
 - [ ] **通过MQTT与服务器通讯，订阅配置更新主题，更新本地配置文件：** 
 
 # 演示

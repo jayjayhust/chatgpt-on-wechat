@@ -538,6 +538,7 @@ class ChatChannel(Channel):
     def send_heartbeat(self):
         while True:
             if self.mqtt_client_inst.client.is_connected:
+                bot_status = False
                 from lib import itchat
                 import datetime
                 current_time = datetime.datetime.now().strftime("%H:%M:%S")
@@ -548,7 +549,9 @@ class ChatChannel(Channel):
                         # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
                         target_rooms = itchat.search_chatrooms(name=group_name)
                         # logger.debug("chat group==>{}<===search info: {}".format(group_name, target_rooms))
-                        if target_rooms and len(target_rooms) > 0 and ("8:59:02" <= current_time < "9:00:02"):  # 设定触发时间
+                        if target_rooms and len(target_rooms) > 0:
+                            bot_status = True
+                        if target_rooms and len(target_rooms) > 0 and ("08:59:02" <= current_time < "09:00:02"):  # 设定触发时间
                         # if target_rooms and len(target_rooms) > 0 and ("11:49:02" <= current_time < "11:50:02"):  # 设定触发时间
                             # target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午骚扰一次大家哦~')
                             # 提取当日温馨小贴士，在群聊里发送
@@ -568,6 +571,7 @@ class ChatChannel(Channel):
                 dict1['timestamp'] = str(int(datetime.datetime.now().timestamp()))  # 时间戳
                 dict1['bot_id'] = self.user_id
                 dict1['bot_name'] = self.name
+                dict1['bot_status'] = str(bot_status)
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
             time.sleep(60.0)  # 休眠60秒
 
