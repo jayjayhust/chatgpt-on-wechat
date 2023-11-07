@@ -126,7 +126,7 @@ class text_abstract(object):
             )
           
             return res.choices[0].message.content
-        if model_type in ["chatglm_pro", "chatglm_std", "chatglm_lite", "chatglm_turbo"]:
+        if model_type in ["chatglm_pro", "chatglm_std", "chatglm_lite", "chatglm_turbo", "ernie_bot_turbo"]:
             # return "Hi, 我是智谱AI(GhatGLM)文摘小助手，还在开发中哟，敬请期待~"
             zhipuai.api_key = conf().get("zhipu_api_key")
             response = zhipuai.model_api.invoke(
@@ -153,37 +153,37 @@ class text_abstract(object):
 
             if response['code'] == 200:
                 return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n\\n', '\n').replace('\\n', '\n')
-        if model_type in ["ernie_bot", "ernie_bot_turbo"]:
-            # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
-            access_key = conf().get("baidu_ernie_access_key")
-            secret_key = conf().get("baidu_ernie_secret_key")
-            url  = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + access_key + "&client_secret=" + secret_key
-            payload = json.dumps("")
-            headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+        # if model_type in ["ernie_bot", "ernie_bot_turbo"]:
+        #     # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
+        #     access_key = conf().get("baidu_ernie_access_key")
+        #     secret_key = conf().get("baidu_ernie_secret_key")
+        #     url  = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + access_key + "&client_secret=" + secret_key
+        #     payload = json.dumps("")
+        #     headers = {
+        #         'Content-Type': 'application/json',
+        #         'Accept': 'application/json'
+        #     }
             
-            response = requests.request("POST", url, headers=headers, data=payload)
-            access_token = response.json().get("access_token")
+        #     response = requests.request("POST", url, headers=headers, data=payload)
+        #     access_token = response.json().get("access_token")
 
-            url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + access_token
-            payload = json.dumps({
-                #  最后一个message的content长度（即此轮对话的问题）不能超过11200个字符；
-                #  如果messages中content总长度大于11200字符，系统会依次遗忘最早的历史会话，直到content的总长度不超过11200个字符
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            })
-            headers = {
-                'Content-Type': 'application/json'
-            }
+        #     url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + access_token
+        #     payload = json.dumps({
+        #         #  最后一个message的content长度（即此轮对话的问题）不能超过11200个字符；
+        #         #  如果messages中content总长度大于11200字符，系统会依次遗忘最早的历史会话，直到content的总长度不超过11200个字符
+        #         "messages": [
+        #             {
+        #                 "role": "user",
+        #                 "content": prompt
+        #             }
+        #         ]
+        #     })
+        #     headers = {
+        #         'Content-Type': 'application/json'
+        #     }
             
-            response = requests.request("POST", url, headers=headers, data=payload)
-            if response:
-                # return "以下回复来自文心一言(ERNIE)：" + response.json()["result"]
-                return response.json()["result"]
+        #     response = requests.request("POST", url, headers=headers, data=payload)
+        #     if response:
+        #         # return "以下回复来自文心一言(ERNIE)：" + response.json()["result"]
+        #         return response.json()["result"]
 
