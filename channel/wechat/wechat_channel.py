@@ -42,7 +42,7 @@ def handler_single_msg(msg):
     return None
 
 
-@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING], isGroupChat=True)
+@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING, ATTACHMENT], isGroupChat=True)
 def handler_group_msg(msg):
     try:
         cmsg = WechatMessage(msg, True)
@@ -206,7 +206,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
     @_check
     def handle_group(self, cmsg: ChatMessage):  # 没有self参数，不是实例方法，是类方法
         if cmsg.ctype == ContextType.VOICE:
-            if conf().get("speech_recognition") != True:
+            if conf().get("group_speech_recognition") != True:
                 return
             logger.debug("[WX]receive voice for group msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.IMAGE:
@@ -217,6 +217,8 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
         elif cmsg.ctype == ContextType.SHARING:
             logger.debug("[WX]receive group sharing: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+        elif cmsg.ctype == ContextType.ATTACHMENT:
+            logger.debug("[WX]receive group attachment: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)  # 组织消息（包含过滤）

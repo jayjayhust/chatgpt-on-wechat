@@ -10,7 +10,8 @@ class ContextType(Enum):
     IMAGE_CREATE = 10  # 创建图片命令
     JOIN_GROUP = 20  # 加入群聊
     PATPAT = 21  # 拍了拍
-    SHARING = 30  # 分享链接
+    SHARING = 30  # 分享链接（需要调试来确定这个数值）
+    ATTACHMENT = 49 # 附件（需要调试来确定这个数值）
 
     def __str__(self):
         return self.name

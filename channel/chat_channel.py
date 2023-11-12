@@ -118,6 +118,38 @@ class ChatChannel(Channel):
                         self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
                     # 3.删除图片（图片路径为file_path）
                     os.remove(file_path)
+                elif ctype == ContextType.ATTACHMENT:  # 群聊附件（word/excel/pdf...）
+                    # 1. 获取附件地址
+                    cmsg = context["msg"]
+                    cmsg.prepare()
+                    file_path = context.content  # 获取附件地址
+                    logger.debug('attachment path: ' + file_path)
+                    subfix = file_path[-3:]  # 获取图片文件后缀
+                    # # 2. 按照图片文件路径读取图片，转码成BASE64
+                    # with open(file_path, "rb") as f:  # 转为二进制格式
+                    #     base64_data = base64.b64encode(f.read())  # 使用base64进行加密，输出为bytes
+                    #     str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
+                    #     # logger.debug(str_base64)  # 打印图片数据
+                    #     # 3. 通过MQTT将图片发送给数据接收服务器
+                    #     dict1 = dict()
+                    #     dict1 = {}
+                    #     dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                    #     dict1['group_chat_id'] = context["msg"].other_user_id
+                    #     dict1['msg_type'] = 'IMAGE'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
+                    #     dict1['image_type'] = subfix  # JPG/PNG/BMP
+                    #     dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                    #     # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                    #     # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
+                    #     dict1['user_id'] = context["msg"].actual_user_id
+                    #     dict1['is_at'] = context["msg"].is_at
+                    #     dict1['at_user_name'] = context["msg"].to_user_nickname
+                    #     dict1['at_user_id'] = context["msg"].to_user_id
+                    #     dict1['user_message'] = str_base64  # 图片，转码成BASE64
+                    #     dict1['create_time'] = context["msg"].create_time
+                    #     dict1['bot_id'] = self.user_id
+                    #     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
+                    # # 3.删除图片（图片路径为file_path）
+                    # os.remove(file_path)
 
                 group_name = cmsg.other_user_nickname
                 group_id = cmsg.other_user_id
