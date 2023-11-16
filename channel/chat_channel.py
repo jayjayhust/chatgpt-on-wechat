@@ -191,10 +191,11 @@ class ChatChannel(Channel):
 
         # 消息内容匹配过程，并处理content
         if ctype == ContextType.TEXT:
-            # "」\n- - - - - - - - - - - - - - -\n"this is the qutation in a massage
+            # "」\n- - - - - - - - - - - - - - -\n"this is the quotation in a massage
             if first_in and "」\n- - - - - - -" in content:  # 初次匹配 过滤引用消息
-                logger.debug("[WX]reference query skipped")
-                return None
+                # logger.debug("[WX]reference query skipped")
+                # return None
+                pass  # 不过滤引用
 
             if context.get("isgroup", False):  # 群聊
                 # 校验关键字
@@ -282,7 +283,7 @@ class ChatChannel(Channel):
         if not e_context.is_pass():
             logger.debug("[WX] ready to handle context: type={}, content={}".format(context.type, context.content))
             if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字消息和创建图片的消息
-                reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器
+                reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器         
             elif context.type == ContextType.VOICE:  # 语音消息
                 cmsg = context["msg"]
                 cmsg.prepare()
@@ -457,6 +458,7 @@ class ChatChannel(Channel):
                 logger.debug("[WX] ready to send reply: {}, context: {}".format(reply, context))
                 self._send(reply, context)
                 # 将要回复的文本记录通过MQTT发送给记录服务器(added by jay@20230807)
+                # 添加了completion_tokens和total_tokens字段(added by jay@20231116)
                 if reply.type == ReplyType.TEXT:
                     dict1 = {}
                     dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
@@ -470,6 +472,8 @@ class ChatChannel(Channel):
                     dict1['user_message'] = reply.content
                     dict1['create_time'] = context["msg"].create_time
                     dict1['bot_id'] = self.user_id
+                    dict1['completion_tokens'] = reply.completion_tokens
+                    dict1['total_tokens'] = reply.total_tokens
                     self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
 
     # 发送微信消息

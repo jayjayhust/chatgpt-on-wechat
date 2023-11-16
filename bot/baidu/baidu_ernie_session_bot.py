@@ -155,18 +155,19 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
 
             reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
             logger.debug(
-                "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
+                "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}, total_tokens={}".format(
                     session.messages,
                     session_id,
                     reply_content["content"],
                     reply_content["completion_tokens"],
+                    reply_content["total_tokens"]
                 )
             )
             if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
-                reply = Reply(ReplyType.ERROR, reply_content["content"])
+                reply = Reply(ReplyType.ERROR, reply_content["content"], reply_content["total_tokens"])
             elif reply_content["completion_tokens"] > 0:
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
-                reply = Reply(ReplyType.TEXT, reply_content["content"], reply_content["completion_tokens"])
+                reply = Reply(ReplyType.TEXT, reply_content["content"], reply_content["completion_tokens"], reply_content["total_tokens"])
             else:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
                 logger.debug("[ERNIE] reply {} used 0 tokens.".format(reply_content))
