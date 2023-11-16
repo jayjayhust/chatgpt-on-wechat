@@ -44,12 +44,16 @@ class ChatChannel(Channel):
                                             conf().get("mqtt_password", "admin"), 
                                             600)
         self.text_abstract_inst = text_abstract()
+        self.greeting_group_status = {}
         _thread = threading.Thread(target=self.consume)
         _thread.setDaemon(True)
         _thread.start()
         _thread_send_heartbeat = threading.Thread(target=self.send_heartbeat)
         _thread_send_heartbeat.setDaemon(True)
         _thread_send_heartbeat.start()
+        _thread_send_greeting = threading.Thread(target=self.send_greeting)
+        _thread_send_greeting.setDaemon(True)
+        _thread_send_greeting.start()
 
     # 根据消息构造context，消息内容相关的触发项写在这里
     def _compose_context(self, ctype: ContextType, content, **kwargs):
@@ -588,19 +592,8 @@ class ChatChannel(Channel):
                         # logger.debug("chat group==>{}<===search info: {}".format(group_name, target_rooms))
                         if target_rooms and len(target_rooms) > 0:
                             bot_status = True
-                        if target_rooms and len(target_rooms) > 0 and ("08:59:02" <= current_time < "09:00:02"):  # 设定触发时间
-                        # if target_rooms and len(target_rooms) > 0 and ("11:49:02" <= current_time < "11:50:02"):  # 设定触发时间
-                            # target_rooms[0].send_msg('hi，我是赛博涛哥，准时上午骚扰一次大家哦~')
-                            # 提取当日温馨小贴士，在群聊里发送
-                            year_month_day = datetime.datetime.now().strftime('%Y-%m-%d')  # 形如：2023-11-04
-                            group_daily_message_list = conf().get("group_daily_message", [])
-                            if len(group_daily_message_list) > 0:
-                                for tmp_dict in group_daily_message_list:
-                                    for tmp_key in tmp_dict.keys():
-                                        if tmp_key == year_month_day:
-                                            logger.debug("send group hint to {}!".format(group_name))
-                                            target_rooms[0].send_msg(tmp_dict[tmp_key])
-                                            break
+                            break
+                        
                 
                 import datetime
                 dict1 = {}
@@ -611,6 +604,37 @@ class ChatChannel(Channel):
                 dict1['bot_status'] = str(bot_status)
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
             time.sleep(60.0)  # 休眠60秒
+
+    # 发送群日推送，单独线程
+    def send_greeting(self):
+        while True:
+            from lib import itchat
+            import datetime
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
+            group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
+            
+            if len(group_daily_message_white_list) > 0:
+                for group_name in group_daily_message_white_list:
+                    # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
+                    target_rooms = itchat.search_chatrooms(name=group_name)
+                    # logger.debug("chat group==>{}<===search info: {}".format(group_name, target_rooms))
+                    if target_rooms and len(target_rooms) > 0 and ("09:00:00" <= current_time < "09:59:59") and (self.greeting_group_status[group_name] == False):  # 设定触发时间范围
+                        # 提取当日温馨小贴士，在群聊里发送
+                        year_month_day = datetime.datetime.now().strftime('%Y-%m-%d')  # 形如：2023-11-04
+                        group_daily_message_list = conf().get("group_daily_message", [])
+                        if len(group_daily_message_list) > 0:
+                            for tmp_dict in group_daily_message_list:
+                                for tmp_key in tmp_dict.keys():
+                                    if tmp_key == year_month_day:
+                                        self.greeting_group_status[group_name] = True
+                                        logger.debug("send group hint to {}!".format(group_name))
+                                        target_rooms[0].send_msg(tmp_dict[tmp_key])
+                                        time.sleep(5)  # 休眠5秒，避免群发消息太快
+                                        break
+                    elif target_rooms and len(target_rooms) > 0 and ("00:00:00" <= current_time < "00:59:59"):  # 设定群消息已群发记录的清零时间范围
+                        self.greeting_group_status[group_name] = False
+
+            time.sleep(120)  # 休眠60秒
 
 def check_prefix(content, prefix_list):
     if not prefix_list:
