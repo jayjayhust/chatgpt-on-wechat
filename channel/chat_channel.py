@@ -45,6 +45,10 @@ class ChatChannel(Channel):
                                             600)
         self.text_abstract_inst = text_abstract()
         self.greeting_group_status = {}
+        group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
+        if len(group_daily_message_white_list) > 0:
+            for group_name in group_daily_message_white_list:
+                self.greeting_group_status[group_name] = False
         _thread = threading.Thread(target=self.consume)
         _thread.setDaemon(True)
         _thread.start()
