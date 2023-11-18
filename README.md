@@ -33,7 +33,9 @@ pip install itchat-uos==1.5.0.dev0
 ```
 - [x] **拯救itchat网页版微信登录不了的问题：** 见上一条，用itchat-uos拯救（https://pypi.org/project/itchat-uos-fix/）。
 - [x] **更新openai驱动，以便调用DALL·E 3：** pip install --upgrade openai -i https://pypi.org/simple
-- [ ] **添加心跳包，反应程序状态和账号状态：** 
+- [x] **添加心跳包，反应程序状态和账号状态：** 
+- [x] **回复消息通过mqtt发送的包中，包含completion_tokens和total_tokens：** 
+- [ ] **itchat收不到企业微信账号发送的消息（重要）：** 需要深入研究一下lib/itchat/core.py中消息接收的实现逻辑（start_receiving()和get_msg()）
 - [ ] **通过MQTT与服务器通讯，订阅配置更新主题，更新本地配置文件：** 
 
 # 演示

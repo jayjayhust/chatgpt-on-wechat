@@ -66,8 +66,16 @@ def configured_reply(self):
                 logger.warning(traceback.format_exc())
 
 def msg_register(self, msgType, isFriendChat=False, isGroupChat=False, isMpChat=False):
-    ''' a decorator constructor
-        return a specific decorator based on information given '''
+    """ 
+    a decorator constructor
+
+    参数：
+    isGroupChat：指定是群聊
+    isMpChat：？
+
+    返回值：
+    return a specific decorator based on information given 
+    """
     if not (isinstance(msgType, list) or isinstance(msgType, tuple)):
         msgType = [msgType]
     def _msg_register(fn):

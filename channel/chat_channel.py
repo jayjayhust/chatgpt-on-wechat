@@ -616,7 +616,8 @@ class ChatChannel(Channel):
             import datetime
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
             group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
-            
+            itchat.get_chatrooms(update=True)  # 获取群聊，注意群必须保持到通讯录，否则可能会找不到群（https://www.cnblogs.com/rgcLOVEyaya/p/RGC_LOVE_YAYA_1075days.html）
+
             if len(group_daily_message_white_list) > 0:
                 for group_name in group_daily_message_white_list:
                     # 参考示例：https://vimsky.com/examples/detail/python-method-itchat.search_chatrooms.html
@@ -638,7 +639,7 @@ class ChatChannel(Channel):
                     elif target_rooms and len(target_rooms) > 0 and ("00:00:00" <= current_time < "00:59:59"):  # 设定群消息已群发记录的清零时间范围
                         self.greeting_group_status[group_name] = False
 
-            time.sleep(120)  # 休眠60秒
+            time.sleep(120)  # 休眠120秒
 
 def check_prefix(content, prefix_list):
     if not prefix_list:
