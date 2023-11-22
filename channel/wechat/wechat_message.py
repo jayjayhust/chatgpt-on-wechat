@@ -22,10 +22,11 @@ class WechatMessage(ChatMessage):
             self.ctype = ContextType.SHARING
             # 链接内容也分为微信文章类的链接、小程序链接等
             self.content = itchat_msg["Url"]
-        elif itchat_msg["Type"] == ATTACHMENT:
+        elif itchat_msg["Type"] == ATTACHMENT:  # 接收到附件('FileSize':'11656'代表11.4 KB)
             self.ctype = ContextType.ATTACHMENT
-            # 接收到附件
-            self.content = itchat_msg["FileName"]
+            # self.content = itchat_msg["FileName"]
+            self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
+            self._prepare_fn = lambda: itchat_msg.download(self.content)
         elif itchat_msg["Type"] == VOICE:
             self.ctype = ContextType.VOICE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径

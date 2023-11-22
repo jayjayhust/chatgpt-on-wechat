@@ -218,7 +218,8 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
         elif cmsg.ctype == ContextType.SHARING:
             logger.debug("[WX]receive group sharing: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
         elif cmsg.ctype == ContextType.ATTACHMENT:
-            logger.debug("[WX]receive group attachment: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            # logger.debug("[WX]receive group attachment: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            pass
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))
         context = self._compose_context(cmsg.ctype, cmsg.content, isgroup=True, msg=cmsg)  # 组织消息（包含过滤）

@@ -130,7 +130,7 @@ class ChatChannel(Channel):
                     # 1. 获取附件地址
                     cmsg = context["msg"]
                     cmsg.prepare()
-                    file_path = context.content  # 获取附件地址
+                    file_path = context.content  # 获取附件文件地址
                     logger.debug('attachment path: ' + file_path)
                     subfix = file_path[-3:]  # 获取图片文件后缀
                     # # 2. 按照图片文件路径读取图片，转码成BASE64
@@ -261,6 +261,23 @@ class ChatChannel(Channel):
                 dict1['at_user_name'] = context["msg"].to_user_nickname
                 dict1['at_user_id'] = context["msg"].to_user_id
                 dict1['user_message'] = context["content"]  # Url
+                dict1['create_time'] = context["msg"].create_time
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
+        elif ctype == ContextType.ATTACHMENT:
+            if context.get("isgroup", False):  # 群聊
+                # 记录所有的群聊文件分享信息
+                dict1 = {}
+                dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                dict1['group_chat_id'] = context["msg"].other_user_id
+                dict1['msg_type'] = 'ATTACHMENT'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT/SHARING/ATTACHMENT
+                dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
+                # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
+                # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
+                dict1['user_id'] = context["msg"].actual_user_id
+                dict1['is_at'] = context["msg"].is_at
+                dict1['at_user_name'] = context["msg"].to_user_nickname
+                dict1['at_user_id'] = context["msg"].to_user_id
+                dict1['user_message'] = context["content"]  # 获取附件文件地址
                 dict1['create_time'] = context["msg"].create_time
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/message", json.dumps(dict1, ensure_ascii=False))
         return context
@@ -410,6 +427,33 @@ class ChatChannel(Channel):
                 else:
                     logger.debug(group_chat_name + ' not is in group_name_share_text_abstract_white_list')
                     return None
+            elif context.type == ContextType.ATTACHMENT:  # 分享文件的摘要功能(added by jay@20231122)
+                cmsg = context["msg"]
+                cmsg.prepare()  # 下载文件？
+                file_path = context.content  # 获取文件地址
+                subfix = file_path[-3:]  # 获取图片文件后缀
+                file_size = cmsg._rawmsg['FileSize']  # 获取文件大小，单位byte
+                if file_size > (5 * 1024*1024):
+                    logger.debug("[WX] attachment is too large to process, just ignore it.")
+                    # 删除文件
+                    try:
+                        os.remove(file_path)
+                    except Exception as e:
+                        pass
+                        # logger.warning("[WX]delete temp file error: " + str(e))
+                    return
+                else:
+                    # 提取文件文字（根据文件后缀）
+
+                    # 处理文字
+        
+                    # 删除文件
+                    try:
+                        os.remove(file_path)
+                    except Exception as e:
+                        pass
+                        # logger.warning("[WX]delete temp file error: " + str(e))
+                    return
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return
@@ -582,6 +626,8 @@ class ChatChannel(Channel):
     # 发送心跳消息给服务器，单独线程
     def send_heartbeat(self):
         while True:
+            time.sleep(60.0)  # 休眠60秒
+
             if self.mqtt_client_inst.client.is_connected:
                 bot_status = False
                 from lib import itchat
@@ -607,7 +653,6 @@ class ChatChannel(Channel):
                 dict1['bot_name'] = self.name
                 dict1['bot_status'] = str(bot_status)
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
-            time.sleep(60.0)  # 休眠60秒
 
     # 发送群日推送，单独线程
     def send_greeting(self):
@@ -616,7 +661,7 @@ class ChatChannel(Channel):
             import datetime
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
             group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
-            itchat.get_chatrooms(update=True)  # 获取群聊，注意群必须保持到通讯录，否则可能会找不到群（https://www.cnblogs.com/rgcLOVEyaya/p/RGC_LOVE_YAYA_1075days.html）
+            # itchat.get_chatrooms(update=True)  # 获取群聊，注意群必须保持到通讯录，否则可能会找不到群（https://www.cnblogs.com/rgcLOVEyaya/p/RGC_LOVE_YAYA_1075days.html）
 
             if len(group_daily_message_white_list) > 0:
                 for group_name in group_daily_message_white_list:
