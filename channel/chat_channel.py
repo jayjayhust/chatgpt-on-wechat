@@ -126,8 +126,8 @@ class ChatChannel(Channel):
                         dict1['create_time'] = context["msg"].create_time
                         dict1['bot_id'] = self.user_id
                         self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
-                    # 3.删除图片（图片路径为file_path）
-                    os.remove(file_path)
+                    # # 3.删除图片（图片路径为file_path）===此部分逻辑后移，因为后面加了图片解释功能（根据功能白名单决定开启）
+                    # os.remove(file_path)
                 elif ctype == ContextType.ATTACHMENT:  # 群聊附件（word/excel/pdf...）
                     # 1. 获取附件地址
                     cmsg = context["msg"]
@@ -379,16 +379,17 @@ class ChatChannel(Channel):
                             str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
                             # logger.debug(str_base64)
                             # 3. 调用图片解析接口，获得文本回复
-                            result, prompt_tokens, completion_tokens, total_tokens = self.image_to_text_inst(str_base64, '请用中文描述下这张图片')
+                            result, prompt_tokens, completion_tokens, total_tokens = self.image_to_text_inst.get_image_query_result(str_base64, '请用中文描述下这张图片')
                             logger.debug(result)
+                            reply.type = ReplyType.TEXT
+                            reply.content = result
                 
                 # 4. 删除临时图片文件
                 try:
                     os.remove(file_path)
                 except Exception as e:
-                    pass
-                    # logger.warning("[WX]delete temp file error: " + str(e))
-                return
+                    logger.warning("[WX]delete temp file error: " + str(e)) 
+                    return          
             elif context.type == ContextType.SHARING:  # 分享链接的摘要功能(added by jay@20230808)
                 group_chat_name = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
                 group_name_share_text_abstract_white_list = conf().get("group_name_share_text_abstract_white_list", [])  # 获取开启摘要功能的白名单
