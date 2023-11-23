@@ -13,7 +13,8 @@ import requests
 
 class image_to_text(object):
     def __init__(self):
-        self.api_key = os.environ.get('OPENAI_API_KEY')
+        # self.api_key = os.environ.get('OPENAI_API_KEY')
+        self.api_key = conf().get("open_ai_api_key")
         pass 
 
     def get_image_query_result(self, base64_image, query):
@@ -30,7 +31,8 @@ class image_to_text(object):
                 "content": [
                 {
                     "type": "text",
-                    "text": "What’s in this image?"
+                    # "text": "What’s in this image?"
+                    "text": query
                 },
                 {
                     "type": "image_url",
