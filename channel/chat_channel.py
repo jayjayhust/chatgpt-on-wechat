@@ -19,6 +19,7 @@ import base64  # 二进制方式打开图片文件
 import hashlib # 导入hashlib模块
 
 from utility.text_abstract import text_abstract
+from utility.image_to_text import image_to_text
 
 try:
     from voice.audio_convert import any_to_wav
@@ -44,6 +45,7 @@ class ChatChannel(Channel):
                                             conf().get("mqtt_password", "admin"), 
                                             600)
         self.text_abstract_inst = text_abstract()
+        self.image_to_text_inst = image_to_text()
         self.greeting_group_status = {}
         group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
         if len(group_daily_message_white_list) > 0:
@@ -355,34 +357,31 @@ class ChatChannel(Channel):
                     else:
                         return
             elif context.type == ContextType.IMAGE:  # 图片消息，当前无默认逻辑，后续把图片都发给服务器作为存档，以便建立图文存档
-                pass
-                # if context.get("isgroup", False):  # 群聊（本部分逻辑已经前置，防止被白名单过滤）
-                #     # 1. 获取图片文件地址
-                #     cmsg = context["msg"]
-                #     cmsg.prepare()
-                #     file_path = context.content  # 获取图片文件地址
-                #     logger.debug('image path: ' + file_path)
-                #     # 2. 按照图片文件路径读取图片，转码成BASE64
-                #     with open(file_path, "rb") as f:  # 转为二进制格式
-                #         base64_data = base64.b64encode(f.read())  # 使用base64进行加密，输出为bytes
-                #         str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
-                #         logger.debug(str_base64)
-                #         # 3. 通过MQTT将图片发送给数据接收服务器
-                #         dict1 = dict()
-                #         dict1 = {}
-                #         dict1['group_chat_name'] = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
-                #         dict1['group_chat_id'] = context["msg"].other_user_id
-                #         dict1['msg_type'] = 'IMAGE'  # TEXT/VOICE/IMAGE/IMAGE_CREATE/JOIN_GROUP/PATPAT
-                #         dict1['user_name'] = context["msg"].actual_user_nickname  # need to encrypt this MD5(msg['ActualNickName']).sub(0, 16)
-                #         # md.update(msg['ActualNickName'].encode('utf-8'))  # 制定需要加密的字符串
-                #         # dict1['user_name'] = md.hexdigest()[0:8]  # 获取加密后的16进制字符串的前8个字符
-                #         dict1['user_id'] = context["msg"].actual_user_id
-                #         dict1['is_at'] = context["msg"].is_at
-                #         dict1['at_user_name'] = context["msg"].to_user_nickname
-                #         dict1['at_user_id'] = context["msg"].to_user_id
-                #         dict1['user_message'] = str_base64  # 图片，转码成BASE64
-                #         dict1['create_time'] = context["msg"].create_time
-                #         self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/image", json.dumps(dict1, ensure_ascii=False))
+                if context.get("isgroup", False):  # 群聊（图片通过MQTT发送的逻辑已经前置，防止被白名单过滤）
+                    group_chat_name = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                    # 确认在"图片识别"功能开启的白名单内
+                    group_image_process_white_list = conf().get("group_image_process_white_list", [])  # 获取开启图片分析功能的白名单
+                    if any(
+                        [
+                            group_chat_name in group_image_process_white_list,
+                        ]
+                    ):
+                        logger.debug(group_chat_name + ' is in group_image_process_white_list')
+                
+                        # 1. 获取图片文件地址
+                        cmsg = context["msg"]
+                        cmsg.prepare()
+                        file_path = context.content  # 获取图片文件地址
+                        logger.debug('image path: ' + file_path)
+                        # 2. 按照图片文件路径读取图片，转码成BASE64
+                        with open(file_path, "rb") as f:  # 转为二进制格式
+                            base64_data = base64.b64encode(f.read())  # 使用base64进行加密，输出为bytes
+                            str_base64 = base64_data.decode('utf-8')  # https://blog.csdn.net/sunt2018/article/details/95351884
+                            # logger.debug(str_base64)
+                            # 3. 调用图片解析接口，获得文本回复
+                            result, prompt_tokens, completion_tokens, total_tokens = self.image_to_text_inst(str_base64, '请用中文描述下这张图片')
+                            logger.debug(result)
+                
                 # 4. 删除临时图片文件
                 try:
                     os.remove(file_path)

@@ -43,7 +43,8 @@ available_setting = {
     "group_chat_using_private_vector_db": [{"测试群1": "namespace_test_vector_db"}],  # 使用私有数据库(群名和对应的私有库namespace)
     "user_guidance": ["在本群，你可以随时@阿图 互动，例：@阿图 写一份社区闲置空间活化的方案。"],  # 用户使用小贴士
     "group_daily_message": [{"2023-11-05": "你好，今天是2023年11月5号，祝大家开心快乐~"}], # 群聊每日温馨小贴士
-    "group_daily_message_white_list": ["阿图巴巴测试群1"],
+    "group_daily_message_white_list": ["阿图巴巴测试群1"],  # 每日小贴士群聊白名单
+    "group_image_process_white_list": ["阿图巴巴奥力给"],  # 图片处理群聊白名单
     "trigger_by_self": False,  # 是否允许机器人触发
     "image_create_prefix": ["画", "看", "找"],  # 开启图片回复的前缀
     "concurrency_in_session": 1,  # 同一会话最多有多少条消息在处理中，大于1可能乱序
