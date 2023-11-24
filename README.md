@@ -35,9 +35,10 @@ pip install itchat-uos==1.5.0.dev0
 - [x] **更新openai驱动，以便调用DALL·E 3：** pip install --upgrade openai -i https://pypi.org/simple
 - [x] **添加心跳包，反应程序状态和账号状态：** 
 - [x] **回复消息通过mqtt发送的包中，包含completion_tokens和total_tokens：** 
-- [ ] **添加群聊中的图片分析功能和白名单配置：** 
-- [ ] **itchat收不到企业微信账号发送的消息（重要）：** 需要深入研究一下lib/itchat/core.py中消息接收的实现逻辑（start_receiving()和get_msg()）
+- [x] **添加群聊中的图片分析功能和白名单配置：** 
 - [ ] **通过MQTT与服务器通讯，订阅配置更新主题，更新本地配置文件：** 
+- [ ] **itchat收不到企业微信账号发送的消息（重要）：** 需要深入研究一下lib/itchat/core.py中消息接收的实现逻辑（start_receiving()和get_msg()）
+
 
 # 演示
 

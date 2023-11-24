@@ -444,8 +444,10 @@ class ChatChannel(Channel):
                     return
                 else:
                     # 提取文件文字（根据文件后缀）
+                    #（代码待补充）
 
                     # 处理文字
+                    #（代码待补充）
         
                     # 删除文件
                     try:

@@ -26,7 +26,7 @@ class WechatMessage(ChatMessage):
             self.ctype = ContextType.ATTACHMENT
             # self.content = itchat_msg["FileName"]
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
-            self._prepare_fn = lambda: itchat_msg.download(self.content)
+            self._prepare_fn = lambda: itchat_msg.download(self.content)  # 下载文件
         elif itchat_msg["Type"] == VOICE:
             self.ctype = ContextType.VOICE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径

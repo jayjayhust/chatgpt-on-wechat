@@ -139,11 +139,22 @@ class Config(dict):
             raise Exception("key {} not in available_setting".format(key))
         return super().__setitem__(key, value)
 
+    # 获取dict内某个Key对应的value
     def get(self, key, default=None):
         try:
             return self[key]
         except KeyError as e:
             return default
+        except Exception as e:
+            raise e
+    
+    # 设置dict内某个Key对应的value
+    def set(self, key, value):
+        try:
+            self[key] = value
+            return True
+        except KeyError as e:
+            return False
         except Exception as e:
             raise e
 
@@ -175,7 +186,7 @@ class Config(dict):
 
 config = Config()
 
-
+# 加载本地配置文件
 def load_config():
     global config
     config_path = "./config.json"
@@ -213,6 +224,9 @@ def load_config():
 
     config.load_user_datas()
 
+# 保存配置到本地配置文件
+def save_config():
+    pass
 
 def get_root():
     return os.path.dirname(os.path.abspath(__file__))
