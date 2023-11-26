@@ -427,35 +427,49 @@ class ChatChannel(Channel):
                 else:
                     logger.debug(group_chat_name + ' not is in group_name_share_text_abstract_white_list')
                     return None
-            elif context.type == ContextType.ATTACHMENT:  # 分享文件的摘要功能(added by jay@20231122)
-                cmsg = context["msg"]
-                cmsg.prepare()  # 下载文件？
-                file_path = context.content  # 获取文件地址
-                subfix = file_path[-3:]  # 获取图片文件后缀
-                file_size = cmsg._rawmsg['FileSize']  # 获取文件大小，单位byte
-                if file_size > (5 * 1024*1024):
-                    logger.debug("[WX] attachment is too large to process, just ignore it.")
-                    # 删除文件
-                    try:
-                        os.remove(file_path)
-                    except Exception as e:
-                        pass
-                        # logger.warning("[WX]delete temp file error: " + str(e))
-                    return
-                else:
-                    # 提取文件文字（根据文件后缀）
-                    #（代码待补充）
+            elif context.type == ContextType.ATTACHMENT:  # 分享文件的处理功能(added by jay@20231122)
+                if context.get("isgroup", False):  # 群聊
+                    group_chat_name = context["msg"].other_user_nickname  # 取WechatMessage类中的实例属性
+                    # 确认在"文件处理"功能开启的白名单内
+                    group_attachment_process_white_list = conf().get("group_attachment_process_white_list", [])  # 获取开启文件处理功能的白名单
+                    if any(
+                        [
+                            group_chat_name in group_attachment_process_white_list,
+                        ]
+                    ):
+                        logger.debug(group_chat_name + ' is in group_attachment_process_white_list')
+                        cmsg = context["msg"]
+                        cmsg.prepare()  # 下载文件？
+                        file_path = context.content  # 获取文件地址
+                        subfix = file_path[-3:]  # 获取文件后缀（这里逻辑待完善，因为有的文件名称不止3个字符，比如.xlsx）
+                        file_size = cmsg._rawmsg['FileSize']  # 获取文件大小，单位byte
+                        if file_size > (5 * 1024*1024):
+                            logger.debug("[WX] attachment is too large to process, just ignore it.")
+                            # 删除文件
+                            try:
+                                os.remove(file_path)
+                            except Exception as e:
+                                pass
+                                # logger.warning("[WX]delete temp file error: " + str(e))
+                            # return
+                            reply.type = ReplyType.TEXT
+                            reply.content = "文件已收到，等待后续阿图功能升级后、对文件进行处理~"
+                        else:
+                            # 提取文件文字（根据文件后缀）
+                            #（代码待补充）
 
-                    # 处理文字
-                    #（代码待补充）
-        
-                    # 删除文件
-                    try:
-                        os.remove(file_path)
-                    except Exception as e:
-                        pass
-                        # logger.warning("[WX]delete temp file error: " + str(e))
-                    return
+                            # 处理文字
+                            #（代码待补充）
+                
+                            # 删除文件
+                            try:
+                                os.remove(file_path)
+                            except Exception as e:
+                                pass
+                                # logger.warning("[WX]delete temp file error: " + str(e))
+                            # return
+                            reply.type = ReplyType.TEXT
+                            reply.content = "文件已收到，等待后续阿图功能升级后、对文件进行处理~"
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return
