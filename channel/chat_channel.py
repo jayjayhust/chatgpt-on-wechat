@@ -443,7 +443,7 @@ class ChatChannel(Channel):
                         file_path = context.content  # 获取文件地址
                         subfix = file_path[-3:]  # 获取文件后缀（这里逻辑待完善，因为有的文件名称不止3个字符，比如.xlsx）
                         file_size = cmsg._rawmsg['FileSize']  # 获取文件大小，单位byte
-                        if file_size > (5 * 1024*1024):
+                        if int(file_size) > (5 * 1024*1024):
                             logger.debug("[WX] attachment is too large to process, just ignore it.")
                             # 删除文件
                             try:
