@@ -28,7 +28,10 @@ class WechatMessage(ChatMessage):
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
             file_size = itchat_msg['FileSize']  # 获取文件大小，单位byte
             logger.debug("[WX] attachment {} size: {} bytes".format(itchat_msg["FileName"], file_size))
-            self._prepare_fn = lambda: itchat_msg.download(self.content)  # 下载文件
+            if int(file_size) > (5 * 1024*1024):
+                logger.debug("[WX] attachment is too large to process, just ignore it.")
+            else:
+                self._prepare_fn = lambda: itchat_msg.download(self.content)  # 下载文件
         elif itchat_msg["Type"] == VOICE:
             self.ctype = ContextType.VOICE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
