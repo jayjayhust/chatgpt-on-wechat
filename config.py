@@ -156,20 +156,17 @@ class Config(dict):
             self[key] = value
 
             # 更新到持久化的本地文件
-            #（代码待完善）
             global config
-            # 将字典转换为JSON格式的字符串
-            config_json_str = json.dumps(config, ensure_ascii=False)
             config_path = "./config_test.json"
             if os.path.exists(config_path):
                 logger.info("配置文件已存在，将覆盖原有配置文件")
-                with open(config_path, 'w') as f: 
-                    f.write(config_json_str)
+                with open(config_path, 'w', encoding="utf-8") as file: 
+                    json.dump(config, file, ensure_ascii=False, indent=4)  # 将字典转换为JSON格式的字符串
                 pass
             else:
                 logger.info("配置文件存在，将新建配置文件")
-                with open(config_path, 'w') as f: 
-                    f.write(config_json_str)
+                with open(config_path, 'w', encoding="utf-8") as f: 
+                    json.dump(config, file, ensure_ascii=False, indent=4)  # 将字典转换为JSON格式的字符串
                 pass
             return True
         except KeyError as e:
