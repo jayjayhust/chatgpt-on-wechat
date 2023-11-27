@@ -150,13 +150,27 @@ class Config(dict):
         except Exception as e:
             raise e
     
-    # 设置dict内某个Key对应的value
+    # 设置dict内某个Key对应的value，并更新到持久化的本地文件
     def set(self, key, value):
         try:
             self[key] = value
 
             # 更新到持久化的本地文件
-            #（代码待补充）
+            #（代码待完善）
+            global config
+            # 将字典转换为JSON格式的字符串
+            config_json_str = json.dumps(config, ensure_ascii=False)
+            config_path = "./config_test.json"
+            if os.path.exists(config_path):
+                logger.info("配置文件已存在，将覆盖原有配置文件")
+                with open(config_path, 'w') as f: 
+                    f.write(config_json_str)
+                pass
+            else:
+                logger.info("配置文件存在，将新建配置文件")
+                with open(config_path, 'w') as f: 
+                    f.write(config_json_str)
+                pass
             return True
         except KeyError as e:
             return False
@@ -202,7 +216,7 @@ def load_config():
     config_str = read_file(config_path)
     logger.debug("[INIT] config str: {}".format(config_str))
 
-    # 将json字符串反序列化为dict类型
+    # 将json字符串反序列化为dict类型（全局变量config）
     config = Config(json.loads(config_str))
 
     # override config with environment variables.
