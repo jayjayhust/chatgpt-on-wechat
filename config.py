@@ -46,6 +46,7 @@ available_setting = {
     "group_daily_message_white_list": ["阿图巴巴测试群1"],  # 每日小贴士群聊白名单
     "group_image_process_white_list": ["阿图巴巴奥力给"],  # 图片处理群聊白名单
     "group_attachment_process_white_list": ["阿图巴巴奥力给"],  # 文件处理群聊白名单
+    "group_attachment_file_size_in_mb": 5,  # 下载文件大小限制（单位MB）
     "trigger_by_self": False,  # 是否允许机器人触发
     "image_create_prefix": ["画", "看", "找"],  # 开启图片回复的前缀
     "concurrency_in_session": 1,  # 同一会话最多有多少条消息在处理中，大于1可能乱序
@@ -153,6 +154,9 @@ class Config(dict):
     def set(self, key, value):
         try:
             self[key] = value
+
+            # 更新到持久化的本地文件
+            #（代码待补充）
             return True
         except KeyError as e:
             return False

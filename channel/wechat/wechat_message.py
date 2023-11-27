@@ -4,6 +4,7 @@ from bridge.context import ContextType
 from channel.chat_message import ChatMessage
 from common.log import logger
 from common.tmp_dir import TmpDir
+from config import conf
 from lib import itchat
 from lib.itchat.content import *
 
@@ -27,8 +28,9 @@ class WechatMessage(ChatMessage):
             # self.content = itchat_msg["FileName"]
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
             file_size = itchat_msg['FileSize']  # 获取文件大小，单位byte
+            file_size_limit = conf().get("group_attachment_file_size_in_mb", 5)
             logger.debug("[WX] attachment {} size: {} bytes".format(itchat_msg["FileName"], file_size))
-            if int(file_size) > (5 * 1024*1024):
+            if int(file_size) > (file_size_limit * 1024*1024):
                 logger.debug("[WX] attachment is too large to process, just ignore it.")
             else:
                 self._prepare_fn = lambda: itchat_msg.download(self.content)  # 下载文件

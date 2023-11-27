@@ -443,7 +443,8 @@ class ChatChannel(Channel):
                         file_path = context.content  # 获取文件地址
                         subfix = file_path[-3:]  # 获取文件后缀（这里逻辑待完善，因为有的文件名称不止3个字符，比如.xlsx）
                         file_size = cmsg._rawmsg['FileSize']  # 获取文件大小，单位byte
-                        if int(file_size) > (5 * 1024*1024):
+                        file_size_limit = conf().get("group_attachment_file_size_in_mb", 5)
+                        if int(file_size) > (file_size_limit * 1024*1024):
                             logger.debug("[WX] attachment is too large to process, just ignore it.")
                             # 删除文件
                             try:
@@ -453,7 +454,7 @@ class ChatChannel(Channel):
                                 # logger.warning("[WX]delete temp file error: " + str(e))
                             # return
                             reply.type = ReplyType.TEXT
-                            reply.content = "文件已收到，等待后续阿图功能升级后、对文件进行处理~"
+                            reply.content = "文件已收到（但文件大小超过下载限制 {}MB），等待后续阿图功能升级后对文件进行处理~".format(file_size_limit)
                         else:
                             # 提取文件文字（根据文件后缀）
                             #（代码待补充）
@@ -469,7 +470,7 @@ class ChatChannel(Channel):
                                 # logger.warning("[WX]delete temp file error: " + str(e))
                             # return
                             reply.type = ReplyType.TEXT
-                            reply.content = "文件已收到，等待后续阿图功能升级后、对文件进行处理~"
+                            reply.content = "文件已收到，等待后续阿图功能升级后对文件进行处理~"
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return

@@ -35,9 +35,10 @@ class mqtt_client(object):
         logger.debug("On message topic:" + msg.topic + " message:" + str(msg.payload.decode('utf-8')))
         # 根据主题确定不同的处理方法
         self.bot_id = conf().get("bot_id", "bot")
+        logger.debug("Wechat bot_id is:" + self.bot_id)
         if msg.topic == f"/chatgpt/groupchat/{self.bot_id}/config/push":
-            if msg.payload.decode('utf-8').json()['bot_id'] == conf().get("bot_id", "bot"):
-                logger.debug("收到配置推送！")
+            if json.loads(str(msg.payload.decode('utf-8')))['bot_id'] == self.bot_id:
+                logger.debug("收到针对自己账号的配置推送！")
         
     # 订阅回调
     def on_subscribe(self, client, userdata, mid, granted_qos):
