@@ -7,6 +7,13 @@ import json
 from bot.baidu.baidu_ernie_image import BaiduErnieImage
 from bot.openai.open_ai_image import OpenAIImage
 
+# tecent vector db
+import tcvectordb
+from tcvectordb.model.collection import Embedding
+from tcvectordb.model.document import Document, Filter, SearchParams
+from tcvectordb.model.enum import FieldType, IndexType, MetricType, EmbeddingModel, ReadConsistency
+from tcvectordb.model.index import Index, VectorIndex, FilterIndex, HNSWParams, IVFFLATParams
+
 from bot.bot import Bot
 from bot.baidu.baidu_ernie_session import BaiduErnieSession
 from bot.session_manager import SessionManager
@@ -21,71 +28,147 @@ import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
 import os
 from common.log import logger
 
-### init pinecone configuration
-pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
-pinecone.init(
-    # api_key="pinecone api key",
-    api_key=pinecone_api_key,
-    environment="eu-west1-gcp"
-)
+# ### init pinecone configuration
+# pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
+# pinecone.init(
+#     # api_key="pinecone api key",
+#     api_key=pinecone_api_key,
+#     environment="eu-west1-gcp"
+# )
 
-# create or connect to index
-index_name = "holon-expert-2023-0509"
-if index_name not in pinecone.list_indexes():
-    pinecone.create_index(index_name, dimension=1536)
-    logger.debug("pinecone index created!")
+# # create or connect to index
+# index_name = "holon-expert-2023-0509"
+# if index_name not in pinecone.list_indexes():
+#     pinecone.create_index(index_name, dimension=1536)
+#     logger.debug("pinecone index created!")
 
-# connect to index(this operation shall take a while)
-index = pinecone.Index(index_name)
-logger.debug("pinecone index connected!")
+# # connect to index(this operation shall take a while)
+# index = pinecone.Index(index_name)
+# logger.debug("pinecone index connected!")
+
+# ### Query Index
+# def search_docs(query):
+#     # 这部分逻辑将来也要替换成国内大模型的Embedding接口
+#     xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
+#     # pinecone的query方法：def query(
+#     # vector: List[float] | None = None,
+#     # id: str | None = None,
+#     # queries: List[QueryVector] | List[Tuple] | None = None,
+#     # top_k: int | None = None,
+#     # namespace: str | None = None,
+#     # filter: Dict[str, str | float | int | bool | List | dict] | None = None,
+#     # include_values: bool | None = None,
+#     # include_metadata: bool | None = None,
+#     # sparse_vector: SparseValues | Dict[str, List[float] | List[int]] | None = None,
+#     # **kwargs: Any
+#     res = index.query([xq], top_k=5, include_metadata=True)
+#     chosen_text = []
+#     # for match in res['matches']:  # 遍历查询的结果
+#     #     chosen_text = match['metadata']
+#     return res['matches']  # 返回查询的结果
+
+
+# ### Construct Prompt
+# def construct_prompt(query):
+#     is_in_index = False
+#     # is_in_index = True
+#     matches = search_docs(query)
+
+#     chosen_text = []
+#     for match in matches:  # 遍历查询的结果
+#         chosen_text.append(match['metadata']['text'])  # 提取单条数据的元数据部分的text字段内容
+#         if(match['score'] > 0.85):
+#             is_in_index = True
+
+#     if (is_in_index):
+#         # prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know or 抱歉我的知识库还没有这块的知识.'.Remember to reply in the same language as the Question."""
+#         prompt = """请尽量如实回答用户的提问，如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'。记得用用户提问的语言来问答问题。"""
+#         prompt += "\n\n"
+#         # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
+#         prompt += "提供的背景内容：" + "\n".join('%s' %a for a in chosen_text)
+#         prompt += "\n\n"
+#         prompt += "问题：" + query
+#         prompt += "\n"
+#         prompt += "回答："
+#         return prompt
+#     else:
+#         return query
+
+DATABASE = "community_database"
+COLLECTION = "cs_jjl_private"
+COLLECTION_ALIAS = "cs_jjl_private_alias"
+
+_client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb.ap-beijing.tencentclb.com:10000', 
+                                    username='root', 
+                                    key='POw30kVmNwOKiJuNi7uPzpoAdX6XWFcIZt3dSECk', 
+                                    timeout=30)
 
 ### Query Index
-def search_docs(query):
-    # 这部分逻辑将来也要替换成国内大模型的Embedding接口
-    xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
-    # pinecone的query方法：def query(
-    # vector: List[float] | None = None,
-    # id: str | None = None,
-    # queries: List[QueryVector] | List[Tuple] | None = None,
-    # top_k: int | None = None,
-    # namespace: str | None = None,
-    # filter: Dict[str, str | float | int | bool | List | dict] | None = None,
-    # include_values: bool | None = None,
-    # include_metadata: bool | None = None,
-    # sparse_vector: SparseValues | Dict[str, List[float] | List[int]] | None = None,
-    # **kwargs: Any
-    res = index.query([xq], top_k=5, include_metadata=True)
-    chosen_text = []
-    # for match in res['matches']:  # 遍历查询的结果
-    #     chosen_text = match['metadata']
-    return res['matches']  # 返回查询的结果
+def search_docs(query_prompt):
+    # xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
+    # res = index.query([xq], top_k=10, include_metadata=True)
+    # return res['matches']
+    # 获取 Collection 对象
+    db = _client.database(DATABASE)
+    coll = db.collection(COLLECTION)
 
+
+    # 通过 embedding 文本搜索
+    # 1. searchByText 提供基于 embedding 文本的搜索能力，会先将 embedding 内容做 Embedding 然后进行按向量搜索
+    # 2. 支持通过 filter 过滤数据
+    # 其他选项类似 search 接口
+
+    # searchByText 返回类型为 Dict，接口查询过程中 embedding 可能会出现截断，如发生截断将会返回响应 warn 信息，如需确认是否截断可以
+    # 使用 "warning" 作为 key 从 Dict 结果中获取警告信息，查询结果可以通过 "documents" 作为 key 从 Dict 结果中获取
+    embeddingItems = [query_prompt]
+    # 不带filter
+    search_by_text_res = coll.searchByText(embeddingItems=embeddingItems,
+                                            params=SearchParams(ef=200),
+                                            limit=5)
+    # # 带filter
+    # filter_param = Filter("timestamp > 1700167349")  # filter参数写法：https://cloud.tencent.com/document/product/1709/98752
+    # search_by_text_res = coll.searchByText(embeddingItems=embeddingItems,
+    #                                        filter=filter_param,
+    #                                        params=SearchParams(ef=200),
+    #                                        limit=5)
+    
+    warning_info = search_by_text_res.get('warning')
+    # print_object(warning_info)
+    documents = search_by_text_res.get('documents')
+    # print_object(documents)
+    # print(len(documents))
+    # for document in documents:
+    #     for record in document:
+    #         print('*' * 100)
+    #         print('id:===============>', record['id'])
+    #         print('score:============>', record['score'])  
+    #         print('text:=============>', record['text'])
+    #         print('catagory:=========>', record['catagory'])
+    #         print('articleTitle:=====>', record['articleTitle'])
+    #         print('url:==============>', record['url'])
+    
+    # if len(documents) > 0:
+    #     print('*' * 100)
+    #     print('用户问题：', query_prompt)
+    #     print('得分最高的答案：{}, 答案类别为：{}, 得分为：{}'.format(documents[0][0]['text'], documents[0][0]['catagory'], documents[0][0]['score']))
+
+    return documents[0]
 
 ### Construct Prompt
-def construct_prompt(query):
-    is_in_index = False
-    # is_in_index = True
-    matches = search_docs(query)
-
-    chosen_text = []
-    for match in matches:  # 遍历查询的结果
-        chosen_text.append(match['metadata']['text'])  # 提取单条数据的元数据部分的text字段内容
-        if(match['score'] > 0.85):
-            is_in_index = True
-
-    if (is_in_index):
-        # prompt = """Answer the question as truthfully as possible using the context below, and if the answer is no within the context, say 'I don't know or 抱歉我的知识库还没有这块的知识.'.Remember to reply in the same language as the Question."""
-        prompt = """请尽量如实回答用户的提问，如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'。记得用用户提问的语言来问答问题。"""
-        prompt += "\n\n"
-        # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
-        prompt += "提供的背景内容：" + "\n".join('%s' %a for a in chosen_text)
-        prompt += "\n\n"
-        prompt += "问题：" + query
-        prompt += "\n"
-        prompt += "回答："
-        return prompt
-    else:
-        return query
+def construct_prompt(query, chosen_text):
+    prompt = """请尽量如实回答用户的提问。如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'。记得用用户提问的语言来问答问题。"""
+    # prompt = """请尽量如实回答用户的提问，并且优先根据下述提供的背景内容作答，如果背景内容中包含URL链接，请在答案中也包含URL链接。记得用用户提问的语言来问答问题。"""
+    # prompt = """用户如果是写文章类的需求，把回答分为两个部分，一个部分是自行作答部分，我期望的格式是：## 自行作答；另外一部分需要完整给出下面提供的背景内容，\
+    # 我期望的格式是：## 知识库推荐 后面附上背景内容列表，我期望的格式是<文章标题>：<链接>。如果用户是信息查询类的问题，则尽量如实回答用户的提问，\
+    # 我期望的格式是：## 知识库推荐；如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'"""
+    prompt += "\n\n"
+    # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
+    prompt += "以下是提供的背景内容：" + "\n".join('%s' %a for a in chosen_text)
+    prompt += "\n\n"
+    prompt += "问题：" + query
+    prompt += "\n"
+    prompt += "回答："
+    return prompt
 
 def get_token():
     access_key = conf().get("baidu_ernie_access_key")
@@ -137,14 +220,22 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 reply = Reply(ReplyType.INFO, "配置已更新")
             if reply:  # 如果是指令，直接回复
                 return reply
-            if self.use_vector_db:
+            if self.use_vector_db:  # 加载向量数据库
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 # (logic reserved here=======================================)
                 group_chat_name = context["msg"].other_user_nickname
                 group_chat_id = context["msg"].other_user_id
                 
                 # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
-                prompt = construct_prompt(query)
+                matches = search_docs(query)
+                chosen_text = []
+                i = 0
+                for match in matches:
+                    i += 1
+                    # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
+                    chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
+                    # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
+                query_retrieval = construct_prompt(query, chosen_text)
             else:
                 # 不加载向量数据库
                 prompt = query
@@ -154,17 +245,23 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             logger.debug("[ERNIE] session query={}".format(session.messages))
 
             reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
+            if self.use_vector_db:  # 加载向量数据库
+                # 处理下content
+                vector_db_retrieval_str = ''
+                for record in chosen_text:
+                    vector_db_retrieval_str += record + '\n'
+                result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + '## 阿图智库推荐:\n' + vector_db_retrieval_str
+                reply_content["content"] = result
             logger.debug(
-                "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}, total_tokens={}".format(
+                "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
                     session.messages,
                     session_id,
                     reply_content["content"],
-                    reply_content["completion_tokens"],
-                    reply_content["total_tokens"]
+                    reply_content["completion_tokens"]
                 )
             )
             if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
-                reply = Reply(ReplyType.ERROR, reply_content["content"], reply_content["total_tokens"])
+                reply = Reply(ReplyType.ERROR, reply_content["content"])
             elif reply_content["completion_tokens"] > 0:
                 self.sessions.session_reply(reply_content["content"], session_id, reply_content["total_tokens"])
                 reply = Reply(ReplyType.TEXT, reply_content["content"], reply_content["completion_tokens"], reply_content["total_tokens"])
@@ -208,7 +305,10 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             # logger.info("[ERNIE] reply={}, total_tokens={}".format(response.choices[0]['message']['content'], response["usage"]["total_tokens"]))
             
             # ERNIE API: https://cloud.baidu.com/doc/WENXINWORKSHOP/s/4lilb2lpf
-            url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + get_token()
+            # ERNIE-Bot-turbo
+            url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + get_access_token()
+            # ERNIE-Bot 4.0
+            # url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + get_access_token()
             payload = json.dumps({
                 "system": conf().get("character_desc", ""),
                 # 聊天上下文信息。说明：
