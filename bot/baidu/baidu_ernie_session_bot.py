@@ -235,7 +235,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
                     chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
                     # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
-                query_retrieval = construct_prompt(query, chosen_text)
+                prompt = construct_prompt(query, chosen_text)
             else:
                 # 不加载向量数据库
                 prompt = query
@@ -306,7 +306,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             
             # ERNIE API: https://cloud.baidu.com/doc/WENXINWORKSHOP/s/4lilb2lpf
             # ERNIE-Bot-turbo
-            url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + get_access_token()
+            url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant?access_token=" + get_token()
             # ERNIE-Bot 4.0
             # url = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + get_access_token()
             payload = json.dumps({
@@ -340,6 +340,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     # return reply
                     result = {"completion_tokens": 0, "content": response.json()["error_msg"]}
         except Exception as e:
+            logger.error(e)
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             
