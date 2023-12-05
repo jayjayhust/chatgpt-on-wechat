@@ -94,20 +94,16 @@ from common.log import logger
 #     else:
 #         return query
 
-DATABASE = "community_database"
-COLLECTION = "cs_jjl_private"
-COLLECTION_ALIAS = "cs_jjl_private_alias"
+DATABASE = "community_database"  # 移到配置文件config.json中
+COLLECTION = "cs_jjl_private"  # 移到配置文件config.json中
 
-_client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb.ap-beijing.tencentclb.com:10000', 
-                                    username='root', 
-                                    key='POw30kVmNwOKiJuNi7uPzpoAdX6XWFcIZt3dSECk', 
+_client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb.ap-beijing.tencentclb.com:10000',  # 移到配置文件config.json中
+                                    username='root',  # 移到配置文件config.json中
+                                    key='POw30kVmNwOKiJuNi7uPzpoAdX6XWFcIZt3dSECk',  # 移到配置文件config.json中
                                     timeout=30)
 
 ### Query Index
 def search_docs(query_prompt):
-    # xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
-    # res = index.query([xq], top_k=10, include_metadata=True)
-    # return res['matches']
     # 获取 Collection 对象
     db = _client.database(DATABASE)
     coll = db.collection(COLLECTION)
@@ -131,26 +127,8 @@ def search_docs(query_prompt):
     #                                        filter=filter_param,
     #                                        params=SearchParams(ef=200),
     #                                        limit=5)
-    
-    warning_info = search_by_text_res.get('warning')
-    # print_object(warning_info)
+
     documents = search_by_text_res.get('documents')
-    # print_object(documents)
-    # print(len(documents))
-    # for document in documents:
-    #     for record in document:
-    #         print('*' * 100)
-    #         print('id:===============>', record['id'])
-    #         print('score:============>', record['score'])  
-    #         print('text:=============>', record['text'])
-    #         print('catagory:=========>', record['catagory'])
-    #         print('articleTitle:=====>', record['articleTitle'])
-    #         print('url:==============>', record['url'])
-    
-    # if len(documents) > 0:
-    #     print('*' * 100)
-    #     print('用户问题：', query_prompt)
-    #     print('得分最高的答案：{}, 答案类别为：{}, 得分为：{}'.format(documents[0][0]['text'], documents[0][0]['catagory'], documents[0][0]['score']))
 
     return documents[0]
 
@@ -277,7 +255,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
         #     else:
         #         reply = Reply(ReplyType.ERROR, retstring)
         #     return reply
-        elif context.type == ContextType.IMAGE_CREATE:
+        elif context.type == ContextType.IMAGE_CREATE:  # 图片生成（使用过DALL.E 3引擎）
             ok, retstring = self.create_img(query, 0)
             reply = None
             if ok:
