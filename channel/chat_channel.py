@@ -644,6 +644,7 @@ class ChatChannel(Channel):
     def send_heartbeat(self):
         while True:
             time.sleep(60.0)  # 休眠60秒
+            logger.debug("heartbeat thread is running...")
 
             if self.mqtt_client_inst.client.is_connected:
                 bot_status = False
@@ -669,7 +670,7 @@ class ChatChannel(Channel):
                 dict1['bot_id'] = self.user_id
                 dict1['bot_name'] = self.name
                 dict1['bot_status'] = str(bot_status)
-                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.bot_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.user_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
 
     # 发送群日推送，单独线程
     def send_greeting(self):
