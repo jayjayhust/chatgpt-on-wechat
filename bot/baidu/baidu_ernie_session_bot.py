@@ -104,7 +104,7 @@ _client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb
                                     timeout=30)
 
 ### Query Index
-def search_docs(query_prompt):
+def search_docs(query_prompt, query_database, query_collection):
     # 获取 Collection 对象
     db = _client.database(DATABASE)
     coll = db.collection(COLLECTION)
@@ -141,7 +141,6 @@ def construct_prompt(query, chosen_text):
     # 我期望的格式是：## 知识库推荐 后面附上背景内容列表，我期望的格式是<文章标题>：<链接>。如果用户是信息查询类的问题，则尽量如实回答用户的提问，\
     # 我期望的格式是：## 知识库推荐；如果答案不在下述提供的背景内容中，请直接回答'抱歉我的知识库还没有这块的知识'"""
     prompt += "\n\n"
-    # prompt += "Context: " + "\n".join(chosen_text)  # TypeError: sequence item 0: expected str instance, list found
     prompt += "以下是提供的背景内容：" + "\n".join('%s' %a for a in chosen_text)
     prompt += "\n\n"
     prompt += "问题：" + query
@@ -203,9 +202,11 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             
             if self.use_vector_db:  # 加载向量数据库
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
-                # (logic reserved here=======================================)
                 group_chat_name = context["msg"].other_user_nickname
                 group_chat_id = context["msg"].other_user_id
+                group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
+                logger.debug(group_chat_using_private_vector_db)
+                # (logic reserved here=======================================)
                 
                 # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
                 matches = search_docs(query)
