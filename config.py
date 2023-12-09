@@ -47,6 +47,9 @@ available_setting = {
     "group_image_process_white_list": ["阿图巴巴奥力给"],  # 图片处理群聊白名单
     "group_attachment_process_white_list": ["阿图巴巴奥力给"],  # 文件处理群聊白名单
     "group_attachment_file_size_in_mb": 5,  # 下载文件大小限制（单位MB）
+    "group_bing_search_white_list": ["阿图巴巴奥力给"],  # 开启bing search群聊白名单
+    "bing_search_subscription_key": "f250f45680884ed5941e900a592d9b93",  # bing search subscription key
+    "bing_search_endpoint": "https://api.bing.microsoft.com/v7.0/search",  # bing search endpoint
     "trigger_by_self": False,  # 是否允许机器人触发
     "image_create_prefix": ["画", "看", "找"],  # 开启图片回复的前缀
     "concurrency_in_session": 1,  # 同一会话最多有多少条消息在处理中，大于1可能乱序
