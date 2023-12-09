@@ -24,8 +24,6 @@ Documentation: https://docs.microsoft.com/en-us/bing/search-apis/bing-web-search
 # Add your Bing Search V7 subscription key and endpoint to your environment variables.
 # subscription_key = os.environ['BING_SEARCH_V7_SUBSCRIPTION_KEY']
 # endpoint = os.environ['BING_SEARCH_V7_ENDPOINT'] + "/v7.0/search"
-subscription_key = "f250f45680884ed5941e900a592d9b93"
-endpoint = "https://api.bing.microsoft.com/" + "/v7.0/search"
 
 
 class bing_search(object):
@@ -39,12 +37,12 @@ class bing_search(object):
         # mkt = 'en-US'
         mkt = 'zh-CN'
         params = { 'q': query, 'mkt': mkt }
-        headers = { 'Ocp-Apim-Subscription-Key': subscription_key }
+        headers = { 'Ocp-Apim-Subscription-Key': self.ubscription_key }
         
         # Call the API
-        result = {}  # dict
+        result = []  # list
         try:
-            response = requests.get(endpoint, headers=headers, params=params)
+            response = requests.get(self.endpoint, headers=headers, params=params)
             response.raise_for_status()
 
             # print('*' * 100)
@@ -57,6 +55,7 @@ class bing_search(object):
             response.raise_for_status()
             search_results = response.json()
             news = search_results['news']['value']
+            record = {}
             for item in news:
                 # print('*' * 100)
                 # print('name:', item['name'])
@@ -64,12 +63,12 @@ class bing_search(object):
                 # print('short URL hash id:', generate_short_url(item['url']))  # https://zhuanlan.zhihu.com/p/615395446（形如ff72b514）
                 # print('description:', item['description'])
                 # print('datePublished:', item['datePublished'])
-                result['name'] = item['name']
-                result['URL'] = item['url']
-                result['description'] = item['description']
-                result['datePublished'] = item['datePublished']
-                return result
+                record['name'] = item['name']
+                record['URL'] = item['url']
+                record['description'] = item['description']
+                record['datePublished'] = item['datePublished']
+                result.append(record)
+            return result
         except Exception as ex:
             raise ex
-        return result
     

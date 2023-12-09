@@ -20,6 +20,7 @@ from bot.session_manager import SessionManager
 from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from config import conf, load_config
+from utility.bing_search import bing_search
 
 import openai
 # import openai.error
@@ -166,6 +167,7 @@ def get_token():
 class BaiduErnieSessionBot(Bot, OpenAIImage):
     def __init__(self):
         super().__init__()
+        self.bing_search_inst = bing_search()  # 实例化搜索引擎
 
         self.sessions = SessionManager(BaiduErnieSession, model=conf().get("model") or "ernie_bot_turbo")
         self.args = {
@@ -198,6 +200,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 reply = Reply(ReplyType.INFO, "配置已更新")
             if reply:  # 如果是指令，直接回复
                 return reply
+            
             if self.use_vector_db:  # 加载向量数据库
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 # (logic reserved here=======================================)
@@ -228,7 +231,8 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 vector_db_retrieval_str = ''
                 for record in chosen_text:
                     vector_db_retrieval_str += record + '\n'
-                result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + '## 阿图智库推荐:\n' + vector_db_retrieval_str
+                result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
+                        '## 阿图智库推荐:\n' + vector_db_retrieval_str
                 reply_content["content"] = result
             logger.debug(
                 "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
@@ -238,6 +242,21 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     reply_content["completion_tokens"]
                 )
             )
+            # 判断是否开启搜索引擎
+            group_bing_search_white_list = conf().get("group_bing_search_white_list", [])
+            if any(
+                [
+                    context["msg"].other_user_nickname in group_bing_search_white_list
+                ]
+            ):
+                search_result = self.bing_search_inst.search(query)
+                search_context = '\n\n## 阿图在线搜索:\n' 
+                for record in search_result:
+                    logger.debug(record)
+                    search_context += record + '\n'
+                reply_content["content"] += search_context  # 添加到回复内容
+                pass
+
             if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
             elif reply_content["completion_tokens"] > 0:
