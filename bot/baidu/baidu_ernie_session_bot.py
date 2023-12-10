@@ -250,13 +250,13 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     context["msg"].other_user_nickname in group_bing_search_white_list
                 ]
             ):
-                search_result = self.bing_search_inst.search(query)
-                search_context = '\n\n## 阿图在线搜索:\n' 
-                for record in search_result:
-                    logger.debug(record)
-                    search_context += record + '\n'
-                reply_content["content"] += search_context  # 添加到回复内容
-                pass
+                search_result, _ = self.bing_search_inst.search(query)
+                if len(search_result) > 0:  # 返回的搜索结果大于0，则附加搜索结果到回复
+                    search_context = '\n\n## 阿图在线搜索:\n' 
+                    for record in search_result:
+                        logger.debug(record)
+                        search_context += record + '\n'
+                    reply_content["content"] += search_context  # 添加到回复内容
 
             if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])

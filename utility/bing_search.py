@@ -54,21 +54,25 @@ class bing_search(object):
 
             response.raise_for_status()
             search_results = response.json()
-            news = search_results['news']['value']
             record = {}
-            for item in news:
-                # print('*' * 100)
-                # print('name:', item['name'])
-                # print('URL:', item['url'])
-                # print('short URL hash id:', generate_short_url(item['url']))  # https://zhuanlan.zhihu.com/p/615395446（形如ff72b514）
-                # print('description:', item['description'])
-                # print('datePublished:', item['datePublished'])
-                record['name'] = item['name']
-                record['URL'] = item['url']
-                record['description'] = item['description']
-                record['datePublished'] = item['datePublished']
-                result.append(record)
-            return result
+            if 'news' in search_results:
+                news = search_results['news']['value']
+                for item in news:
+                    record['name'] = item['name']
+                    record['URL'] = item['url']
+                    record['description'] = item['description']
+                    record['datePublished'] = item['datePublished']
+                    result.append(record)
+                return result, 'news'
+            elif 'webPages' in search_results:
+                webpages = search_results['webPages']['value']
+                for item in webpages:
+                    record['name'] = item['name']
+                    record['URL'] = item['displayUrl']
+                    record['description'] = item['snippet']
+                    record['datePublished'] = item['datePublished']
+                    result.append(record)
+                return result, 'webPages'
         except Exception as ex:
             raise ex
     
