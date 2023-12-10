@@ -1,6 +1,8 @@
 # REF URL: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/overview
 # REF URL: https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/quickstarts/rest/python
 # REF URL: https://github.com/microsoft/bing-search-sdk-for-python/blob/main/samples/rest/BingWebSearchV7.py
+# PRICE: https://www.microsoft.com/en-us/bing/apis/pricing
+# Query Usage: https://portal.azure.com/#@jayhust163.onmicrosoft.com/resource/subscriptions/5a315ee5-b0f3-477a-ad90-4040c291594c/overview
 
 # -*- coding: utf-8 -*-
 
@@ -37,7 +39,7 @@ class bing_search(object):
         # mkt = 'en-US'
         mkt = 'zh-CN'
         params = { 'q': query, 'mkt': mkt }
-        headers = { 'Ocp-Apim-Subscription-Key': self.ubscription_key }
+        headers = { 'Ocp-Apim-Subscription-Key': self.subscription_key }
         
         # Call the API
         result = []  # list
@@ -54,23 +56,30 @@ class bing_search(object):
 
             response.raise_for_status()
             search_results = response.json()
-            record = {}
             if 'news' in search_results:
                 news = search_results['news']['value']
                 for item in news:
+                    record = {}
                     record['name'] = item['name']
                     record['URL'] = item['url']
                     record['description'] = item['description']
-                    record['datePublished'] = item['datePublished']
+                    if 'datePublished' in item:
+                        record['datePublished'] = item['datePublished']
+                    else:
+                        record['datePublished'] = ''
                     result.append(record)
                 return result, 'news'
             elif 'webPages' in search_results:
                 webpages = search_results['webPages']['value']
                 for item in webpages:
+                    record = {}
                     record['name'] = item['name']
                     record['URL'] = item['displayUrl']
                     record['description'] = item['snippet']
-                    record['datePublished'] = item['datePublished']
+                    if 'datePublished' in item:
+                        record['datePublished'] = item['datePublished']
+                    else:
+                        record['datePublished'] = ''
                     result.append(record)
                 return result, 'webPages'
         except Exception as ex:

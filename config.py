@@ -40,7 +40,7 @@ available_setting = {
     "group_name_keyword_white_list": [],  # 开启自动回复的群名称关键词列表
     "group_name_share_text_abstract_white_list": [],  # 开启微信分享文章摘要提取功能的群名称列表
     "group_chat_in_one_session": ["ChatGPT测试群"],  # 支持会话上下文共享的群名称
-    "group_chat_using_private_vector_db": [{"测试群1": "namespace_test_vector_db"}],  # 使用私有数据库(群名和对应的私有库namespace)
+    "group_chat_using_private_vector_db": [{"阿图巴巴奥力给": {"database": "community_database", "collection": "cs_jjl_private"}}],  # 使用私有数据库(群名和对应的私有库database和collection)
     "user_guidance": ["在本群，你可以随时@阿图 互动，例：@阿图 写一份社区闲置空间活化的方案。"],  # 用户使用小贴士
     "group_daily_message": [{"2023-11-05": "你好，今天是2023年11月5号，祝大家开心快乐~"}], # 群聊每日温馨小贴士
     "group_daily_message_white_list": ["阿图巴巴测试群1"],  # 每日小贴士群聊白名单

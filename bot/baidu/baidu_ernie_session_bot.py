@@ -204,19 +204,22 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 group_chat_name = context["msg"].other_user_nickname
                 group_chat_id = context["msg"].other_user_id
-                group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
+                group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])  # 获取各个群对应的数据库设置
                 logger.debug(group_chat_using_private_vector_db)
-                # (logic reserved here=======================================)
+                for group_chat_vector_db_confg in group_chat_using_private_vector_db:
+                    logger.debug(group_chat_vector_db_confg)  # dict类型
+                    # (logic reserved here=======================================)
                 
                 # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
-                matches = search_docs(query)
+                matches = search_docs(query, '', '')
                 chosen_text = []
                 i = 0
                 for match in matches:
                     i += 1
-                    # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
-                    chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
-                    # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
+                    if match['score'] > 0.85:
+                        # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
+                        chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
+                        # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
                 prompt = construct_prompt(query, chosen_text)
             else:
                 # 不加载向量数据库
@@ -230,8 +233,11 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             if self.use_vector_db:  # 加载向量数据库
                 # 处理下content
                 vector_db_retrieval_str = ''
-                for record in chosen_text:
-                    vector_db_retrieval_str += record + '\n'
+                if len(chosen_text) > 0:
+                    for record in chosen_text:
+                        vector_db_retrieval_str += record + '\n'
+                else:
+                    vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行百度或Google。'
                 result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
                         '## 阿图智库推荐:\n' + vector_db_retrieval_str
                 reply_content["content"] = result
@@ -253,10 +259,16 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 search_result, _ = self.bing_search_inst.search(query)
                 if len(search_result) > 0:  # 返回的搜索结果大于0，则附加搜索结果到回复
                     search_context = '\n\n## 阿图在线搜索:\n' 
+                    record_count = 0
+                    record_count_limit = 2  # 最多显示几条搜索结果
                     for record in search_result:
-                        logger.debug(record)
-                        search_context += record + '\n'
-                    reply_content["content"] += search_context  # 添加到回复内容
+                        logger.debug(record)  # dict类型
+                        # search_context += str(record) + '\n'  # 这里再修订下格式
+                        search_context += '【标题】：' + record['name'] + '【简述】：' + record['description'] + '【链接】：' + record['URL'] + '\n'
+                        record_count += 1
+                        if record_count >= record_count_limit:
+                            break
+                    reply_content["content"] = str(reply_content["content"]) + search_context  # 添加到回复内容
 
             if reply_content["completion_tokens"] == 0 and len(reply_content["content"]) > 0:
                 reply = Reply(ReplyType.ERROR, reply_content["content"])
