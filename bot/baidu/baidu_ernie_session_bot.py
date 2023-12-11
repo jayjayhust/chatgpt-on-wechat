@@ -237,7 +237,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     for record in chosen_text:
                         vector_db_retrieval_str += record + '\n'
                 else:
-                    vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行搜索。'
+                    vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行搜索。' + '\n'
                 result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
                         '## 阿图智库推荐:\n' + vector_db_retrieval_str
                 reply_content["content"] = result
@@ -258,7 +258,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             ):
                 search_result, _ = self.bing_search_inst.search(query)
                 if len(search_result) > 0:  # 返回的搜索结果大于0，则附加搜索结果到回复
-                    search_context = '\n\n## 阿图在线搜索:\n' 
+                    search_context = '\n## 阿图在线搜索:\n' 
                     record_count = 0
                     record_count_limit = 2  # 最多显示几条搜索结果
                     for record in search_result:
