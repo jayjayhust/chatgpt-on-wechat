@@ -216,7 +216,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 i = 0
                 for match in matches:
                     i += 1
-                    if match['score'] > 0.85:
+                    if match['score'] > 0.80:  # RAG的分数阈值
                         # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
                         chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
                         # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
@@ -237,7 +237,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     for record in chosen_text:
                         vector_db_retrieval_str += record + '\n'
                 else:
-                    vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行百度或Google。'
+                    vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行搜索。'
                 result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
                         '## 阿图智库推荐:\n' + vector_db_retrieval_str
                 reply_content["content"] = result

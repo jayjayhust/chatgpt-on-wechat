@@ -167,7 +167,7 @@ class Config(dict):
                     json.dump(config, file, ensure_ascii=False, indent=4)  # 将字典转换为JSON格式的字符串
                 pass
             else:
-                logger.info("配置文件存在，将新建配置文件")
+                logger.info("配置文件不存在，将新建配置文件")
                 with open(config_path, 'w', encoding="utf-8") as f: 
                     json.dump(config, file, ensure_ascii=False, indent=4)  # 将字典转换为JSON格式的字符串
                 pass
