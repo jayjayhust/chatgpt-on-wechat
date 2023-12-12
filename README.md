@@ -88,6 +88,8 @@ cd chatgpt-on-wechat/
 > 能够使用`itchat`创建机器人，并具有文字交流功能所需的最小依赖集合。
 ```bash
 pip3 install -r requirements.txt
+## 从python官方源下载package
+pip3 install -r requirements.txt -i https://pypi.org/simple
 ```
 
 **(3) 拓展依赖 (可选，建议安装)：**
