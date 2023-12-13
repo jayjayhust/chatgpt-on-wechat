@@ -19,7 +19,8 @@ import base64  # 二进制方式打开图片文件
 import hashlib # 导入hashlib模块
 
 from utility.text_abstract import text_abstract
-from utility.image_to_text import image_to_text
+from utility.image_to_text_openai import image_to_text_openai as image_to_text
+# from utility.image_to_text_qwen import image_to_text_qwen as image_to_text
 
 try:
     from voice.audio_convert import any_to_wav
@@ -380,6 +381,7 @@ class ChatChannel(Channel):
                             # logger.debug(str_base64)
                             # 3. 调用图片解析接口，获得文本回复
                             result, prompt_tokens, completion_tokens, total_tokens = self.image_to_text_inst.get_image_query_result(str_base64, '请用中文描述下这张图片')
+                            # result, prompt_tokens, completion_tokens, total_tokens = self.image_to_text_inst.get_image_query_result(file_path, '请用中文描述下这张图片')
                             logger.debug(result)
                             reply.type = ReplyType.TEXT
                             reply.content = result
