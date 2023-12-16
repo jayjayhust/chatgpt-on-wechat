@@ -473,6 +473,9 @@ class ChatChannel(Channel):
                             # return
                             reply.type = ReplyType.TEXT
                             reply.content = "文件已收到，等待后续阿图功能升级后对文件进行处理~"
+                    else:
+                        logger.debug(group_chat_name + ' not is in group_attachment_process_white_list')
+                        return None
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return
