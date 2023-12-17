@@ -106,8 +106,10 @@ _client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb
 ### Query Index
 def search_docs(query_prompt, query_database, query_collection):
     # 获取 Collection 对象
-    db = _client.database(DATABASE)
-    coll = db.collection(COLLECTION)
+    # db = _client.database(DATABASE)
+    db = _client.database(query_database)
+    # coll = db.collection(COLLECTION)
+    coll = db.collection(query_collection)
 
 
     # 通过 embedding 文本搜索
@@ -200,6 +202,9 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             if reply:  # 如果是指令，直接回复
                 return reply
             
+             # 判断是否开启群的向量数据库
+            prompt = query
+            chosen_text = []
             if self.use_vector_db:  # 加载向量数据库
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 group_chat_name = context["msg"].other_user_nickname
@@ -209,18 +214,20 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                 for group_chat_vector_db_confg in group_chat_using_private_vector_db:
                     logger.debug(group_chat_vector_db_confg)  # dict类型
                     # (logic reserved here=======================================)
+                    if group_chat_name in group_chat_vector_db_confg.keys():  # 该群聊开启了向量数据库
+                        logger.debug(group_chat_vector_db_confg[group_chat_name]["database"])
+                        logger.debug(group_chat_vector_db_confg[group_chat_name]["collection"])
                 
-                # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
-                matches = search_docs(query, '', '')
-                chosen_text = []
-                i = 0
-                for match in matches:
-                    i += 1
-                    if match['score'] > 0.80:  # RAG的分数阈值
-                        # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
-                        chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
-                        # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
-                prompt = construct_prompt(query, chosen_text)
+                        # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
+                        matches = search_docs(query, group_chat_vector_db_confg[group_chat_name]["database"], group_chat_vector_db_confg[group_chat_name]["collection"])
+                        i = 0
+                        for match in matches:
+                            i += 1
+                            if match['score'] > 0.80:  # RAG的分数阈值
+                                # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
+                                chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
+                                # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
+                        prompt = construct_prompt(query, chosen_text)
             else:
                 # 不加载向量数据库
                 prompt = query

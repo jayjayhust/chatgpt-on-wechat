@@ -264,3 +264,8 @@ pidfile = ./tmp/supervisord.pid
 
 - 效果记录
   - 已确认情况1：在项目进程被人为关掉后，可以自动重启项目
+
+## typing_extensions版本的问题
+- 报错描述：ImportError: cannot import name 'TypeAliasType' from 'typing_extensions'
+  - 原因：项目依赖的typing_extensions版本是4.8.1，而为了测试google gemini，把版本降到了4.5.0
+  - 解决方案：将typing_extensions版本升级为4.8.1（pip install typing_extensions==4.8.0 -i https://pypi.org/simple）

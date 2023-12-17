@@ -42,7 +42,8 @@ def handler_single_msg(msg):
     return None
 
 
-@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING, ATTACHMENT], isGroupChat=True)
+# @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING, ATTACHMENT], isGroupChat=True)
+@itchat.msg_register([TEXT, VOICE, PICTURE, NOTE, SHARING], isGroupChat=True)
 def handler_group_msg(msg):
     try:
         cmsg = WechatMessage(msg, True)

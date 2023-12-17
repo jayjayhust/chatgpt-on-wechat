@@ -15,9 +15,9 @@ class Bridge(object):
         self.btype = {
             # "chat": const.CHATGPT,  # 这里目前固定死了聊天模型，未来接国内LLM时，要进行切换
             "chat": const.CHATGLM,  # ChatGLM
-            "voice_to_text": conf().get("voice_to_text", "openai"),
-            "text_to_voice": conf().get("text_to_voice", "google"),
-            "translate": conf().get("translate", "baidu"),
+            "voice_to_text": conf().get("voice_to_text", "openai"),  # voice_to_text的引擎
+            "text_to_voice": conf().get("text_to_voice", "google"),  # text_to_voice的引擎
+            "translate": conf().get("translate", "baidu"),  # 翻译的引擎
         }
         model_type = conf().get("model")
         if model_type in ["text-davinci-003", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4"]:

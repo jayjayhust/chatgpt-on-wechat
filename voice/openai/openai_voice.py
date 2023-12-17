@@ -18,13 +18,14 @@ class OpenaiVoice(Voice):
     def voiceToText(self, voice_file):
         logger.debug("[Openai] voice file name={}".format(voice_file))
         try:
-            file = open(voice_file, "rb")
+            audio_file = open(voice_file, "rb")
             # result = openai.Audio.transcribe("whisper-1", file)  # old api
             result = openai.audio.transcriptions.create(  # new api
                 model="whisper-1", 
-                file=voice_file
+                file=audio_file,
+                response_format="text"
             )
-            text = result["text"]
+            text = result
             reply = Reply(ReplyType.TEXT, text)
             logger.info("[Openai] voiceToText text={} voice file name={}".format(text, voice_file))
         except Exception as e:
