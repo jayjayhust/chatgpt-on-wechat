@@ -107,9 +107,7 @@ _client = tcvectordb.VectorDBClient(url=conf().get("vector_db_url", ''),
 ### Query Index
 def search_docs(query_prompt, query_database, query_collection):
     # 获取 Collection 对象
-    # db = _client.database(DATABASE)
     db = _client.database(query_database)
-    # coll = db.collection(COLLECTION)
     coll = db.collection(query_collection)
 
 
@@ -210,7 +208,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
              # 判断是否开启群的向量数据库
             prompt = query
             chosen_text = []
-            if self.use_vector_db and is_group_chat:  # 加载向量数据库（如果是群聊）
+            if self.use_vector_db and is_group_chat:  # 加载向量数据库（群聊）
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 group_chat_name = context["msg"].other_user_nickname
                 # group_chat_id = context["msg"].other_user_id
@@ -242,7 +240,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             logger.debug("[ERNIE] session query={}".format(session.messages))
 
             reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
-            if self.use_vector_db and is_group_chat:  # 加载向量数据库
+            if self.use_vector_db and is_group_chat:  # 加载向量数据库（群聊）
                 # 处理下content
                 vector_db_retrieval_str = ''
                 if len(chosen_text) > 0:
