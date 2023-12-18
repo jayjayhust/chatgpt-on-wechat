@@ -95,12 +95,13 @@ from common.log import logger
 #     else:
 #         return query
 
-DATABASE = "community_database"  # 移到配置文件config.json中
-COLLECTION = "cs_jjl_private"  # 移到配置文件config.json中
-
-_client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb.ap-beijing.tencentclb.com:10000',  # 移到配置文件config.json中
-                                    username='root',  # 移到配置文件config.json中
-                                    key='POw30kVmNwOKiJuNi7uPzpoAdX6XWFcIZt3dSECk',  # 移到配置文件config.json中
+# _client = tcvectordb.VectorDBClient(url='http://lb-rrpz2rer-fsrvyb2gznphi0kc.clb.ap-beijing.tencentclb.com:10000',  # 移到配置文件config.json中
+#                                     username='root',  # （数据库用户名）移到配置文件config.json中，不过一个微信号应该对应一个向量数据库实例就可以了
+#                                     key='POw30kVmNwOKiJuNi7uPzpoAdX6XWFcIZt3dSECk',  # （数据库密码）移到配置文件config.json中，不过一个微信号应该对应一个向量数据库实例就可以了
+#                                     timeout=30)
+_client = tcvectordb.VectorDBClient(url=conf().get("vector_db_url", ''),
+                                    username=conf().get("vector_db_user", ''),
+                                    key=conf().get("vector_db_password", ''),
                                     timeout=30)
 
 ### Query Index
@@ -184,6 +185,10 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
         self.use_vector_db = conf().get("use_vector_db") or False
 
     def reply(self, query, context=None):
+        # 私聊的原因信息会通过此处回复，但是绕过了群聊的检测，所以要看传入的上文参数是否保持了单聊/群聊标识
+        is_group_chat = context.get("isgroup", False)
+        logger.debug("[ERNIE] reply context is-from-group-chat flag={}".format(is_group_chat))
+
         # acquire reply content
         if context.type == ContextType.TEXT:  # 文本问答
             logger.info("[ERNIE] query={}".format(query))
@@ -205,10 +210,10 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
              # 判断是否开启群的向量数据库
             prompt = query
             chosen_text = []
-            if self.use_vector_db:  # 加载向量数据库
+            if self.use_vector_db and is_group_chat:  # 加载向量数据库（如果是群聊）
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 group_chat_name = context["msg"].other_user_nickname
-                group_chat_id = context["msg"].other_user_id
+                # group_chat_id = context["msg"].other_user_id
                 group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])  # 获取各个群对应的数据库设置
                 logger.debug(group_chat_using_private_vector_db)
                 for group_chat_vector_db_confg in group_chat_using_private_vector_db:
@@ -237,7 +242,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
             logger.debug("[ERNIE] session query={}".format(session.messages))
 
             reply_content = self.reply_text(session)  # 调用reply_text()并传入session参数（实现短期记忆）
-            if self.use_vector_db:  # 加载向量数据库
+            if self.use_vector_db and is_group_chat:  # 加载向量数据库
                 # 处理下content
                 vector_db_retrieval_str = ''
                 if len(chosen_text) > 0:
