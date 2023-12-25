@@ -35,12 +35,25 @@ class Hello(Plugin):
             e_context["context"].type = ContextType.TEXT
             msg: ChatMessage = e_context["context"]["msg"]
             # e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
-            user_guidances = conf().get("user_guidance", [])
-            if len(user_guidances) == 0:
-                e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
-            else:
-                user_guidance = user_guidances[random.randint(0, len(user_guidances) - 1)]
-                e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊，结尾再加上这句使用指南：' + user_guidance
+            user_specified_guidance = conf().get("user_specified_guidance", [])  # 获取群订制的新进群用户欢迎小贴士数组
+            group_chat_name = msg.other_user_nickname  # 获取群名称
+            is_user_specified_guidance = False
+            for user_specified_guidance_config in user_specified_guidance:
+                logger.debug(user_specified_guidance_config)  # dict类型
+                if group_chat_name in user_specified_guidance_config.keys():  # 该群聊开启了订制的新进群用户欢迎小贴士
+                    is_user_specified_guidance = True
+                    user_guidance = user_specified_guidance_config[group_chat_name]
+                    e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊，结尾再加上这句使用指南：' + user_guidance
+                    break
+            
+            if not is_user_specified_guidance:
+                user_guidances = conf().get("user_guidance", [])
+                if len(user_guidances) == 0:
+                    e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊。'
+                else:
+                    user_guidance = user_guidances[random.randint(0, len(user_guidances) - 1)]
+                    e_context["context"].content = f'请你随机使用一种风格说一句问候语来欢迎新用户"{msg.actual_user_nickname}"加入群聊，结尾再加上这句使用指南：' + user_guidance
+            
             e_context.action = EventAction.CONTINUE  # 事件继续，交付给下个插件或默认逻辑
             return
 

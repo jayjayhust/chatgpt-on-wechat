@@ -44,7 +44,8 @@ available_setting = {
     "vector_db_url": "",  # 向量数据库实例服务地址
     "vector_db_user": "",  # 向量数据库实例用户名
     "vector_db_password": "",  # 向量数据库实例密码
-    "user_guidance": ["在本群，你可以随时@阿图 互动，例：@阿图 写一份社区闲置空间活化的方案。"],  # 用户使用小贴士
+    "user_guidance": ["在本群，你可以随时@阿图 互动，例：@阿图 写一份社区闲置空间活化的方案。"],  # 新进群用户欢迎小贴士
+    "user_specified_guidance": [{"阿图巴巴测试群1": "你好人类，我是阿图，这是为你订制的专属欢迎词！"}],  # 群订制的新进群用户欢迎小贴士
     "group_daily_message": [{"2023-11-05": "你好，今天是2023年11月5号，祝大家开心快乐~"}], # 群聊每日温馨小贴士
     "group_daily_message_white_list": ["阿图巴巴测试群1"],  # 每日小贴士群聊白名单
     "group_image_process_white_list": ["阿图巴巴奥力给"],  # 图片处理群聊白名单
