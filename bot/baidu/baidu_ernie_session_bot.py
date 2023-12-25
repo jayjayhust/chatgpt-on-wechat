@@ -208,6 +208,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
              # 判断是否开启群的向量数据库
             prompt = query
             chosen_text = []
+            is_group_chat_using_private_db = False
             if self.use_vector_db and is_group_chat:  # 加载向量数据库（群聊）
                 # 在这里进行私有数据库的判断：通过判断群名是否在group_chat_using_private_db中的配置，来设定namespace是否需要设置
                 group_chat_name = context["msg"].other_user_nickname
@@ -218,6 +219,7 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                     logger.debug(group_chat_vector_db_confg)  # dict类型
                     # (logic reserved here=======================================)
                     if group_chat_name in group_chat_vector_db_confg.keys():  # 该群聊开启了向量数据库
+                        is_group_chat_using_private_db = True
                         logger.debug(group_chat_vector_db_confg[group_chat_name]["database"])
                         logger.debug(group_chat_vector_db_confg[group_chat_name]["collection"])
                 
@@ -248,8 +250,13 @@ class BaiduErnieSessionBot(Bot, OpenAIImage):
                         vector_db_retrieval_str += record + '\n'
                 else:
                     vector_db_retrieval_str = '阿图智库中暂时没有这块知识，请自行搜索。' + '\n'
-                result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
-                        '## 阿图智库推荐:\n' + vector_db_retrieval_str
+                # 判断是否开启了对应群聊的阿图智库
+                if is_group_chat_using_private_db:
+                    result = '## 阿图自行作答:\n' + reply_content["content"] + '\n\n' + \
+                            '## 阿图智库推荐:\n' + vector_db_retrieval_str
+                else:
+                    result = reply_content["content"]
+
                 reply_content["content"] = result
             logger.debug(
                 "[ERNIE] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
