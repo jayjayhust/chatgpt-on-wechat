@@ -13,6 +13,7 @@ from common.dequeue import Dequeue
 from common.log import logger
 from config import conf
 from plugins import *
+from channel.chat_message import ChatMessage
 
 from communication.mqtt_client import mqtt_client
 import base64  # 二进制方式打开图片文件
@@ -476,6 +477,29 @@ class ChatChannel(Channel):
                     else:
                         logger.debug(group_chat_name + ' not is in group_attachment_process_white_list')
                         return None
+            elif context.type == ContextType.JOIN_GROUP:
+                msg: ChatMessage = e_context["context"]["msg"]
+                user_specified_guidance = conf().get("user_specified_guidance", [])  # 获取群订制的新进群用户欢迎小贴士数组(订制版本)
+                group_chat_name = msg.other_user_nickname  # 获取群名称
+                is_user_specified_guidance = False
+                for user_specified_guidance_config in user_specified_guidance:
+                    logger.debug(user_specified_guidance_config)  # dict类型
+                    if group_chat_name in user_specified_guidance_config.keys():  # 该群聊开启了订制的新进群用户欢迎小贴士
+                        is_user_specified_guidance = True
+                        user_guidance = user_specified_guidance_config[group_chat_name]
+                        
+                        reply = Reply()
+                        reply.type = ReplyType.TEXT
+                        msg: ChatMessage = e_context["context"]["msg"]
+                        if e_context["context"]["isgroup"]:
+                            reply.content = f"你好，{msg.actual_user_nickname}！" + user_guidance
+                        else:
+                            reply.content = f"Hello, {msg.from_user_nickname}"
+
+                        break
+                
+                if not is_user_specified_guidance:
+                    reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
                 return

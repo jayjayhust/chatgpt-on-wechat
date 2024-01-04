@@ -188,6 +188,16 @@ class Config(dict):
         return self.user_datas[user]
 
     def load_user_datas(self):
+        """
+        加载用户数据文件。
+        
+        Args:
+            无。
+        
+        Returns:
+            无返回值。
+        
+        """
         try:
             with open(os.path.join(get_appdata_dir(), "user_datas.pkl"), "rb") as f:
                 self.user_datas = pickle.load(f)
