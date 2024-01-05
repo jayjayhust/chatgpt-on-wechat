@@ -499,6 +499,7 @@ class ChatChannel(Channel):
                         break
                 
                 if not is_user_specified_guidance:
+                    context.type = ContextType.TEXT
                     reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器
             else:
                 logger.error("[WX] unknown context type: {}".format(context.type))
