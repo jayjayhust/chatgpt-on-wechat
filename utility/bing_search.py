@@ -59,7 +59,7 @@ class bing_search(object):
             if 'news' in search_results:
                 news = search_results['news']['value']
                 for item in news:
-                    record = {}
+                    record = {}  # dict
                     record['name'] = item['name']
                     record['URL'] = item['url']
                     record['description'] = item['description']
@@ -72,7 +72,7 @@ class bing_search(object):
             elif 'webPages' in search_results:
                 webpages = search_results['webPages']['value']
                 for item in webpages:
-                    record = {}
+                    record = {}  # dict
                     record['name'] = item['name']
                     record['URL'] = item['displayUrl']
                     record['description'] = item['snippet']
