@@ -20,8 +20,9 @@ import base64  # 二进制方式打开图片文件
 import hashlib # 导入hashlib模块
 
 from utility.text_abstract import text_abstract
-from utility.image_to_text_openai import image_to_text_openai as image_to_text
+# from utility.image_to_text_openai import image_to_text_openai as image_to_text
 # from utility.image_to_text_qwen import image_to_text_qwen as image_to_text
+from utility.image_to_text_chatglm import image_to_text_chatglm as image_to_text
 
 try:
     from voice.audio_convert import any_to_wav
