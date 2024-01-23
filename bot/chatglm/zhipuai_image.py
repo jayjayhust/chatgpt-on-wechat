@@ -19,7 +19,7 @@ class ZhipuAIImage(object):
         try:
             response = self.client.images.generations(
                 model="cogview-3",  # 填写需要调用的模型名称
-                prompt="一只可爱的小猫咪",
+                prompt=query,
             )
 
             image_url = response.data[0].url
