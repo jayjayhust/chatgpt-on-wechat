@@ -13,7 +13,7 @@ from config import conf
 class ZhipuAIImage(object):
     def __init__(self):
         self.api_key = conf().get("zhipu_api_key")
-        self.client = ZhipuAI(api_key="2a2f3a2d8915ef2cc9c2e3b2e983a66e.8Xs9GrhMsQuzeWCx") # 填写您自己的APIKey
+        self.client = ZhipuAI(api_key="2a2f3a2d8915ef2cc9c2e3b2e983a66e.8Xs9GrhMsQuzeWCx")  # 填写您自己的APIKey
 
     def create_img(self, query, retry_count=0, api_key=None):
         try:
