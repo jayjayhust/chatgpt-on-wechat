@@ -6,6 +6,7 @@ import requests
 import json
 from bot.baidu.baidu_ernie_image import BaiduErnieImage
 from bot.openai.open_ai_image import OpenAIImage
+from bot.chatglm.zhipuai_image import ZhipuaiImage
 
 # tecent vector db
 import tcvectordb
@@ -164,7 +165,8 @@ def get_token():
 
 # Baidu ERNIE-Bot-turbo对话接口 
 # class BaiduErnieSessionBot(Bot, BaiduErnieImage):
-class BaiduErnieSessionBot(Bot, OpenAIImage):
+# class BaiduErnieSessionBot(Bot, OpenAIImage):
+class BaiduErnieSessionBot(Bot, ZhipuaiImage):
     def __init__(self):
         super().__init__()
         self.bing_search_inst = bing_search()  # 实例化搜索引擎
