@@ -16,7 +16,7 @@ from common import const
 from config import conf
 from common.log import logger
 import json
-import zhipuai
+from zhipuai import ZhipuAI
 
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
@@ -27,6 +27,7 @@ openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 class text_abstract(object):
     def __init__(self):
+        self.client = ZhipuAI(api_key=conf().get("zhipu_api_key"))  # 填写您自己的APIKey
         pass
         
         
@@ -113,7 +114,7 @@ class text_abstract(object):
         #   4. AI代理已经展现出了巨大潜力和市场，第一批能够可靠地执行多步骤任务并具备一定自主能力的系统将在一年内上市。 \
         #   5. 随着时间的推移，我们有望在不断优化和完善中见证这些AI代理为人类社会带来积极而深远的影响。 \
         #   原文共2485字，阅读需4分钟"
-        prompt = "你现在角色是一位阅读小助手，请给下面这段文字，生成一段200~300字左右的摘要："
+        prompt = "你现在角色是一位阅读小助手，请给下面这段文字，生成一段200~300字左右的摘要，并列出几个核心要点："
         prompt += "\n"
         prompt += query
         print(prompt)
@@ -128,31 +129,54 @@ class text_abstract(object):
             return res.choices[0].message.content
         if model_type in ["chatglm_pro", "chatglm_std", "chatglm_lite", "chatglm_turbo", "ernie_bot_turbo"]:
             # return "Hi, 我是智谱AI(GhatGLM)文摘小助手，还在开发中哟，敬请期待~"
-            zhipuai.api_key = conf().get("zhipu_api_key")
-            response = zhipuai.model_api.invoke(
-                # model="chatglm_lite",  # ChatGLM-6B(https://open.bigmodel.cn/doc/api#chatglm_lite)
-                # model="chatglm_std",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_std)
-                # model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
-                model="chatglm_turbo",
-                prompt=[
+            # zhipuai.api_key = conf().get("zhipu_api_key")
+            # response = zhipuai.model_api.invoke(
+            #     # model="chatglm_lite",  # ChatGLM-6B(https://open.bigmodel.cn/doc/api#chatglm_lite)
+            #     # model="chatglm_std",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_std)
+            #     # model="chatglm_pro",  # ChatGLM(https://open.bigmodel.cn/doc/api#chatglm_pro)
+            #     model="chatglm_turbo",
+            #     prompt=[
+            #         {"role": "user", "content": "你是谁"},  # - user 指用户角色输入的信息
+            #         {"role": "assistant", "content": conf().get("self_desc")},  # - assistant 指模型返回的信息
+            #         {"role": "user", "content": prompt}],
+            #     top_p=0.7,
+            #     temperature=0.9,
+            # )
+            response = self.client.chat.completions.create(
+                model="glm-3-turbo",  # 填写需要调用的模型名称
+                messages=[
                     {"role": "user", "content": "你是谁"},  # - user 指用户角色输入的信息
                     {"role": "assistant", "content": conf().get("self_desc")},  # - assistant 指模型返回的信息
-                    {"role": "user", "content": prompt}],
-                top_p=0.7,
-                temperature=0.9,
+                    {"role": "user", "content": prompt}
+                ],
             )
             # response形如：
-            # {'code': 200, 'msg': '操作成功', 'data': {'request_id': '8065132984818443914', 
-            # 'task_id': '8065132984818443914', 'task_status': 'SUCCESS', 'choices': [{'role': 'assistant', 
-            # 'content': '" 我是一个名为智谱清言的人工智能助手，可以叫我小智🤖，是基于清华大学 KEG 实验室和智谱 AI 公司于 2023 
-            # 年共同训练的语言模型开发的。我的任务是针对用户的问题和要求提供适当的答复和支持。"'}], 
-            # 'usage': {'prompt_tokens': 3, 'completion_tokens': 53, 'total_tokens': 56}}, 'success': True}
-            # or:
-            # {'code': 1261, 'msg': 'Prompt 超长', 'success': False}
-            logger.debug(response)
+            # {
+            #     "created": 1703487403,
+            #     "id": "8239375684858666781",
+            #     "model": "glm-3-turbo",
+            #     "request_id": "8239375684858666781",
+            #     "choices": [
+            #         {
+            #             "finish_reason": "stop",
+            #             "index": 0,
+            #             "message": {
+            #                 "content": "\n作为一个人工智能助手，我可以帮助你完成多种任务，包括但不限于：\n\n1. 回答问题......",
+            #                 "role": "assistant"
+            #             }
+            #         }
+            #     ],
+            #     "usage": {
+            #         "completion_tokens": 217,
+            #         "prompt_tokens": 31,
+            #         "total_tokens": 248
+            #     }
+            # }
+            logger.debug(response)  # print(response.choices[0].message)
 
-            if response['code'] == 200:
-                return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n\\n', '\n').replace('\\n', '\n')
+            # if response['code'] == 200:
+            #     return str(response["data"]["choices"][0]["content"]).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n\\n', '\n').replace('\\n', '\n')
+            return str(response.choices[0].message.content).replace('  ', '').replace('"', '').replace('\n', '').replace('\\n\\n', '\n').replace('\\n', '\n')
         # if model_type in ["ernie_bot", "ernie_bot_turbo"]:
         #     # return "Hi, 我是文心一言(ERNIE)文摘小助手，还在开发中哟，敬请期待~"
         #     access_key = conf().get("baidu_ernie_access_key")
