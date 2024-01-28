@@ -102,7 +102,7 @@ class mqtt_client(object):
     def on_subscribe(self, client, userdata, mid, granted_qos):
         logger.debug("On Subscribed: qos = %d" % granted_qos)
 
-        # 发送配置下发请求
+        # 向服务器发送配置下发请求
         if userdata == '/sys/config/get':
             timestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
             msgId = timestamp
