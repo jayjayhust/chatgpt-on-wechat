@@ -39,6 +39,7 @@ available_setting = {
     "group_name_white_list": ["ChatGPT测试群", "ChatGPT测试群2"],  # 开启自动回复的群名称列表
     "group_name_keyword_white_list": [],  # 开启自动回复的群名称关键词列表
     "group_name_share_text_abstract_white_list": [],  # 开启微信分享文章摘要提取功能的群名称列表
+    "group_name_image_save_white_list": [],  # 开启群聊图片保存功能的群名称列表
     "group_chat_in_one_session": ["ChatGPT测试群"],  # 支持会话上下文共享的群名称
     "group_chat_using_private_vector_db": [{"阿图巴巴奥力给": {"database": "community_database", "collection": "cs_jjl_private"}}],  # 使用私有数据库(群名和对应的私有库database和collection)
     "vector_db_url": "",  # 向量数据库实例服务地址
@@ -164,7 +165,7 @@ class Config(dict):
 
             # 更新到持久化的本地文件
             global config
-            config_path = "./config_test.json"
+            config_path = "./config_server_update.json"
             if os.path.exists(config_path):
                 logger.info("配置文件已存在，将覆盖原有配置文件")
                 with open(config_path, 'w', encoding="utf-8") as file: 

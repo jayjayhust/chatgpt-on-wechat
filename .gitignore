@@ -7,6 +7,7 @@ venv*
 *.pyc
 config.json
 config_test.json
+config_server_update.json
 QR.png
 nohup.out
 tmp
