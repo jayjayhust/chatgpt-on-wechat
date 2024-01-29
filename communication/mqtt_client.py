@@ -41,7 +41,7 @@ class mqtt_client(object):
         # 向服务器发送配置查询请求
         timestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
         msgId = timestamp
-        data_str = "{'msgId': '" + msgId + "', 'type': 'json', 'timestamp': '" + timestamp + "','message': '','success': ''}"
+        data_str = "{'msgId': '" + msgId + "', 'type': 'json', 'timestamp': '" + timestamp + "','dataType': 'all','chatGroupName': ''}"
         client.publish(f"/sys/config/get", data_str)
     
     # 消息回调
@@ -86,27 +86,27 @@ class mqtt_client(object):
             data = json.loads(str(msg.payload.decode('utf-8')))  # 字符串转字典
             msgId = data['msgId']
             for record in data['data']:
-                logger.debug('群名:', record['chatGroupName'])  # chatGroupName: 群名
+                logger.debug('群名:'+ record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存
-                    logger.debug('功能:', role['name'], ':', role['key'])
-                    if role['key'] == 0:  # 阿图智聊
+                    logger.debug('功能:' + role['name'] + ':' + role['key'])
+                    if role['key'] == '0':  # 阿图智聊
                         group_name_white_list = conf().get("group_name_white_list", [])
                         if chat_group_name not in group_name_white_list:
                             group_name_white_list.append(chat_group_name)
-                        conf().set("group_name_white_list", self.group_name_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_white_list", group_name_white_list)  # 更新到全局配置文件
                         pass
-                    elif role['key'] == 1:  # 推文摘要
+                    elif role['key'] == '1':  # 推文摘要
                         group_name_share_text_abstract_white_list = conf().get("group_name_share_text_abstract_white_list", [])
                         if chat_group_name not in group_name_share_text_abstract_white_list:
                             group_name_share_text_abstract_white_list.append(chat_group_name)
-                        conf().set("group_name_share_text_abstract_white_list", self.group_name_share_text_abstract_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_share_text_abstract_white_list", group_name_share_text_abstract_white_list)  # 更新到全局配置文件
                         pass
-                    elif role['key'] == 2:  # 图片储存
+                    elif role['key'] == '2':  # 图片储存
                         group_name_image_save_white_list = conf().get("group_name_image_save_white_list", [])
                         if chat_group_name not in group_name_image_save_white_list:
                             group_name_image_save_white_list.append(chat_group_name)
-                        conf().set("group_name_image_save_white_list", self.group_name_image_save_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_image_save_white_list", group_name_image_save_white_list)  # 更新到全局配置文件
                         pass
         
     # 订阅回调
