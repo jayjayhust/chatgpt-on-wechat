@@ -22,6 +22,7 @@ from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from config import conf, load_config
 from utility.bing_search import bing_search
+from utility.serper_search import serper_search
 
 import openai
 # import openai.error
@@ -169,7 +170,8 @@ def get_token():
 class BaiduErnieSessionBot(Bot, ZhipuAIImage):
     def __init__(self):
         super().__init__()
-        self.bing_search_inst = bing_search()  # 实例化搜索引擎
+        # self.search_inst = bing_search()  # 实例化搜索引擎
+        self.search_inst = serper_search()  # 实例化搜索引擎
 
         self.sessions = SessionManager(BaiduErnieSession, model=conf().get("model") or "ernie_bot_turbo")
         self.args = {
@@ -269,13 +271,13 @@ class BaiduErnieSessionBot(Bot, ZhipuAIImage):
                 )
             )
             # 判断是否开启搜索引擎
-            group_bing_search_white_list = conf().get("group_bing_search_white_list", [])
+            group_web_search_white_list = conf().get("group_web_search_white_list", [])
             if any(
                 [
-                    context["msg"].other_user_nickname in group_bing_search_white_list
+                    context["msg"].other_user_nickname in group_web_search_white_list
                 ]
             ):
-                search_result, _ = self.bing_search_inst.search(query)
+                search_result, _ = self.search_inst.search(query)
                 if len(search_result) > 0:  # 返回的搜索结果大于0，则附加搜索结果到回复
                     search_context = '\n## 阿图在线搜索:\n' 
                     record_count = 0
