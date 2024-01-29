@@ -7,6 +7,7 @@ from common.log import logger
 from config import conf
 
 import datetime
+import time
 
 class mqtt_client(object):
     
@@ -17,6 +18,7 @@ class mqtt_client(object):
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.client.on_subscribe = self.on_subscribe
         self.client.on_publish = self.on_publish
         self.client.username_pw_set(username=mqtt_username, password=mqtt_password)
         self.client.connect(mqtt_host, mqtt_port, mqtt_keepalive)  # 600为keepalive的时间间隔
@@ -32,6 +34,15 @@ class mqtt_client(object):
         # 订阅相关主题
         client.subscribe("/sys/config/push")  # 服务器配置下发
         client.subscribe("/sys/config/get_reply")  # 微信端配置查询回复
+
+        # 等待订阅生效
+        time.sleep(3)
+
+        # 向服务器发送配置查询请求
+        timestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
+        msgId = timestamp
+        data_str = "{'msgId': '" + msgId + "', 'type': 'json', 'timestamp': '" + timestamp + "','message': '','success': ''}"
+        client.publish(f"/sys/config/get", data_str)
     
     # 消息回调
     def on_message(self, client, userdata, msg):
@@ -101,14 +112,7 @@ class mqtt_client(object):
     # 订阅回调
     def on_subscribe(self, client, userdata, mid, granted_qos):
         logger.debug("On Subscribed: qos = %d" % granted_qos)
-
-        # 向服务器发送配置下发请求
-        if userdata == '/sys/config/get':
-            timestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
-            msgId = timestamp
-            data_str = "{'msgId': '" + msgId + "', 'type': 'json', 'timestamp': '" + timestamp + "','message': '','success': ''}"
-            client.publish(f"/sys/config/get", data_str)
-            pass
+        pass
  
     # 取消订阅回调
     def on_unsubscribe(self, client, userdata, mid):
