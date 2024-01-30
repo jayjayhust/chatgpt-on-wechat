@@ -10,6 +10,7 @@ import requests
 import json
 import hashlib
 from config import conf
+from common.log import logger
 
 def generate_short_url(original_url):
     hash = hashlib.sha1(original_url.encode())
@@ -139,14 +140,16 @@ class serper_search(object):
             #   ]
             # }
 
+            logger.debug(response.text)
+            result = []  # list
             resultList = json.loads(response.text)["organic"]
-            for result in resultList:
+            for item in resultList:
                 record = {}  # dict
-                record['name'] = result['name']
-                record['URL'] = result['link']
-                record['description'] = result['snippet']
-                if 'date' in result:
-                    record['datePublished'] = result['date']
+                record['name'] = item['title']
+                record['URL'] = item['link']
+                record['description'] = item['snippet']
+                if 'date' in item:
+                    record['datePublished'] = item['date']
                 else:
                     record['datePublished'] = ''
                 result.append(record)
