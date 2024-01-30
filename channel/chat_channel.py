@@ -696,11 +696,11 @@ class ChatChannel(Channel):
                 
                 import datetime
                 dict1 = {}
-                dict1['status'] = 'online'  # 状态
-                dict1['timestamp'] = str(int(datetime.datetime.now().timestamp()))  # 时间戳
+                dict1['type'] = 'json'
+                dict1['timestamp'] = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
                 dict1['bot_id'] = self.user_id
                 dict1['bot_name'] = self.name
-                dict1['bot_status'] = str(bot_status)
+                dict1['bot_status'] = str(bot_status)  # 状态
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.user_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
 
     # 发送群日推送，单独线程
