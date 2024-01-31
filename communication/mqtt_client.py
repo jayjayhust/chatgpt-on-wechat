@@ -56,7 +56,19 @@ class mqtt_client(object):
             for record in data['data']:
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
-                for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存
+                
+                if record['vectordbName'] is not None:
+                    logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
+                    logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
+                    group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
+                    if chat_group_name not in group_chat_using_private_vector_db:  # 群名不在白名单中，则新增向量库配置
+                        group_chat_using_private_vector_db[chat_group_name] = {'vectordbName': record['vectordbName'], 'vectordbCollection': record['vectordbCollection']}
+                    else:  # 群名在白名单中，则更新向量库配置
+                        group_chat_using_private_vector_db[chat_group_name]['vectordbName'] = record['vectordbName']
+                        group_chat_using_private_vector_db[chat_group_name]['vectordbCollection'] = record['vectordbCollection']
+                    conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
+
+                for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
                     if role['key'] == '0':  # 阿图智聊
                         group_name_white_list = conf().get("group_name_white_list", [])
@@ -75,6 +87,18 @@ class mqtt_client(object):
                         if chat_group_name not in group_name_image_save_white_list:
                             group_name_image_save_white_list.append(chat_group_name)
                         conf().set("group_name_image_save_white_list", group_name_image_save_white_list)  # 更新到全局配置文件
+                        pass
+                    elif role['key'] == '3':  # 搜索功能
+                        group_web_search_white_list = conf().get("group_web_search_white_list", [])
+                        if chat_group_name not in group_web_search_white_list:
+                            group_web_search_white_list.append(chat_group_name)
+                        conf().set("group_web_search_white_list", group_web_search_white_list)  # 更新到全局配置文件
+                        pass
+                    elif role['key'] == '4':  # 图片识别
+                        group_image_process_white_list = conf().get("group_image_process_white_list", [])
+                        if chat_group_name not in group_image_process_white_list:
+                            group_image_process_white_list.append(chat_group_name)
+                        conf().set("group_image_process_white_list", group_image_process_white_list)  # 更新到全局配置文件
                         pass
             
             # 回复配置下发结果
@@ -88,7 +112,19 @@ class mqtt_client(object):
             for record in data['data']:
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
-                for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存
+
+                if record['vectordbName'] is not None:
+                    logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
+                    logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
+                    group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
+                    if chat_group_name not in group_chat_using_private_vector_db:  # 群名不在白名单中，则新增向量库配置
+                        group_chat_using_private_vector_db[chat_group_name] = {'vectordbName': record['vectordbName'], 'vectordbCollection': record['vectordbCollection']}
+                    else:  # 群名在白名单中，则更新向量库配置
+                        group_chat_using_private_vector_db[chat_group_name]['vectordbName'] = record['vectordbName']
+                        group_chat_using_private_vector_db[chat_group_name]['vectordbCollection'] = record['vectordbCollection']
+                    conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
+
+                for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
                     if role['key'] == '0':  # 阿图智聊
                         group_name_white_list = conf().get("group_name_white_list", [])
@@ -107,6 +143,18 @@ class mqtt_client(object):
                         if chat_group_name not in group_name_image_save_white_list:
                             group_name_image_save_white_list.append(chat_group_name)
                         conf().set("group_name_image_save_white_list", group_name_image_save_white_list)  # 更新到全局配置文件
+                        pass
+                    elif role['key'] == '3':  # 搜索功能
+                        group_web_search_white_list = conf().get("group_web_search_white_list", [])
+                        if chat_group_name not in group_web_search_white_list:
+                            group_web_search_white_list.append(chat_group_name)
+                        conf().set("group_web_search_white_list", group_web_search_white_list)  # 更新到全局配置文件
+                        pass
+                    elif role['key'] == '4':  # 图片识别
+                        group_image_process_white_list = conf().get("group_image_process_white_list", [])
+                        if chat_group_name not in group_image_process_white_list:
+                            group_image_process_white_list.append(chat_group_name)
+                        conf().set("group_image_process_white_list", group_image_process_white_list)  # 更新到全局配置文件
                         pass
         
     # 订阅回调
