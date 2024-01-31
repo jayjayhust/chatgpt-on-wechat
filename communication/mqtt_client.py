@@ -62,19 +62,19 @@ class mqtt_client(object):
                         group_name_white_list = conf().get("group_name_white_list", [])
                         if chat_group_name not in group_name_white_list:
                             group_name_white_list.append(chat_group_name)
-                        conf().set("group_name_white_list", self.group_name_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_white_list", group_name_white_list)  # 更新到全局配置文件
                         pass
                     elif role['key'] == '1':  # 推文摘要
                         group_name_share_text_abstract_white_list = conf().get("group_name_share_text_abstract_white_list", [])
                         if chat_group_name not in group_name_share_text_abstract_white_list:
                             group_name_share_text_abstract_white_list.append(chat_group_name)
-                        conf().set("group_name_share_text_abstract_white_list", self.group_name_share_text_abstract_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_share_text_abstract_white_list", group_name_share_text_abstract_white_list)  # 更新到全局配置文件
                         pass
                     elif role['key'] == '2':  # 图片储存
                         group_name_image_save_white_list = conf().get("group_name_image_save_white_list", [])
                         if chat_group_name not in group_name_image_save_white_list:
                             group_name_image_save_white_list.append(chat_group_name)
-                        conf().set("group_name_image_save_white_list", self.group_name_image_save_white_list)  # 更新到全局配置文件
+                        conf().set("group_name_image_save_white_list", group_name_image_save_white_list)  # 更新到全局配置文件
                         pass
             
             # 回复配置下发结果
