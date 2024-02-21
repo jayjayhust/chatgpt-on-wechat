@@ -125,7 +125,7 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
 
     def __init__(self):
         super().__init__()
-        self.receivedMsgs = ExpiredDict(60 * 60 * 24)
+        self.receivedMsgs = ExpiredDict(60 * 60 * 24)  # 1天内的消息不重复处理
         self.bot_id = conf().get("bot_id", "bot")
 
     def startup(self):

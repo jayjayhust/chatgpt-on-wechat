@@ -57,7 +57,7 @@ class mqtt_client(object):
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
                 
-                if record['vectordbName'] is not None:
+                if 'vectordbName' in record:
                     logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
                     logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
                     group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
@@ -113,7 +113,7 @@ class mqtt_client(object):
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
 
-                if record['vectordbName'] is not None:
+                if 'vectordbName' in record:
                     logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
                     logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
                     group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])

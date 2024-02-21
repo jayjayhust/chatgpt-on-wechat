@@ -36,6 +36,7 @@ pip install itchat-uos==1.5.0.dev0
 - [x] **添加心跳包，反应程序状态和账号状态：** 
 - [x] **回复消息通过mqtt发送的包中，包含completion_tokens和total_tokens：** 
 - [x] **添加群聊中的图片分析功能和白名单配置：** 
+- [ ] **故障热重启后、大量回复之前收到的消息的问题：** (lib/itchat/components/hotreload.py进行了修订，但是还是存在问题，需要进一步研究)
 - [ ] **通过MQTT与服务器通讯，订阅配置更新主题，更新本地配置文件：** 
 - [ ] **itchat收不到企业微信账号发送的消息（重要）：** 需要深入研究一下lib/itchat/core.py中消息接收的实现逻辑（start_receiving()和get_msg()）
 
