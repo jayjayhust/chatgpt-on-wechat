@@ -29,6 +29,8 @@ from utility.mac_derive import mac_derive
 from io import BytesIO
 from PIL import Image
 
+from communication.mqtt_client import mqtt_client
+
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
     try:
@@ -88,7 +90,7 @@ def qrCallback(uuid, status, qrcode):
 
         import qrcode
 
-        url = f"https://login.weixin.qq.com/l/{uuid}"
+        url = f"https://login.weixin.qq.com/l/{uuid}"  # 生成登录二维码的url
 
         qr_api1 = "https://api.isoyu.com/qr/?m=1&e=L&p=20&url={}".format(url)
         qr_api2 = "https://api.qrserver.com/v1/create-qr-code/?size=400×400&data={}".format(url)
@@ -116,6 +118,8 @@ def qrCallback(uuid, status, qrcode):
             logger.info("wlan_mac: {}".format(wlan_mac))
         else:
             logger.info("wlan_mac is not available")
+        # 传输登录二维码到管理后台（mqtt）
+        WechatChannel().send_login_qrcode(url, wlan_mac)
 
 
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
@@ -259,3 +263,15 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             itchat.send_image(file_path, toUserName=receiver)  # 调用itchat接口发送图片
             os.remove(file_path)  # 删除图片（图片路径为file_path）
             logger.info("[WX] sendImage base64, receiver={}".format(receiver))
+
+
+    # 发送登录二维码到管理后台（mqtt）
+    def send_login_qrcode(self, url, wlan_mac):
+        if self.mqtt_client_inst.client.is_connected:
+            import datetime
+            dict1 = {}
+            dict1['type'] = 'json'
+            dict1['timestamp'] = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
+            dict1['bot_id'] = self.user_id  # 机器人id，后面用机器无线网卡的mac地址来区分不同机器人
+            dict1['url'] = url
+            self.mqtt_client_inst.publish(f"/chatgpt/groupchat/login", json.dumps(dict1, ensure_ascii=False))
