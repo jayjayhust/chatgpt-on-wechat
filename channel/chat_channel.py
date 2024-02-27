@@ -698,7 +698,7 @@ class ChatChannel(Channel):
                 dict1 = {}
                 dict1['type'] = 'json'
                 dict1['timestamp'] = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
-                dict1['bot_id'] = self.user_id
+                dict1['bot_id'] = conf().get("bot_id")  # 机器人ID
                 dict1['bot_name'] = self.name
                 dict1['bot_status'] = str(bot_status)  # 状态
                 self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.user_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))

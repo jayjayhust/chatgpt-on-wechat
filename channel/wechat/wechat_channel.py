@@ -130,8 +130,9 @@ def qrCallback(uuid, status, qrcode):
             logger.info("wlan_mac: {}".format(wlan_mac))
         else:
             logger.info("wlan_mac is not available")
+        conf().set("bot_id", wlan_mac)  # 更新到全局配置文件
         # 传输登录二维码到管理后台（mqtt）
-        WechatChannel().send_login_qrcode(url, wlan_mac)
+        WechatChannel().send_login_qrcode(url, bot_uid=wlan_mac)
 
 
 # 单例模式：保证了在程序的不同位置都可以且仅可以取到同一个对象实例，如果实例不存在，会创建一个实例；如果已存在就会返回这个实例。
@@ -168,7 +169,6 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
             qrCallback=qrCallback,  # method that should accept uuid, status, qrcode for usage
         )
         self.user_id = itchat.instance.storageClass.userName  # 获取微信用户的id
-        conf().set("bot_id", self.user_id)  # 更新到全局配置文件
         self.name = itchat.instance.storageClass.nickName  # 获取微信用户的昵称
         logger.info('*' * 100)
         logger.info("Wechat login success, user_id: {}, nickname: {}".format(self.user_id, self.name))
@@ -278,12 +278,12 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
 
 
     # 发送登录二维码到管理后台（mqtt）
-    def send_login_qrcode(self, url, wlan_mac):
+    def send_login_qrcode(self, url, bot_uid):
         if self.mqtt_client_inst.client.is_connected:
             import datetime
             dict1 = {}
             dict1['type'] = 'json'
             dict1['timestamp'] = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))  # 时间戳（形如20240128123105）
-            dict1['bot_id'] = self.user_id  # 机器人id，后面用机器无线网卡的mac地址来区分不同机器人
+            dict1['bot_id'] = bot_uid  # 机器人id，后面用机器无线网卡的mac地址来区分不同机器人(如果是容器，需要设置容器运行时加载的本地环境文件)
             dict1['url'] = url
             self.mqtt_client_inst.publish(f"/chatgpt/groupchat/login", json.dumps(dict1, ensure_ascii=False))
