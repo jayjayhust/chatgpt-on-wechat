@@ -78,15 +78,27 @@ def _check(func):
 def qrCallback(uuid, status, qrcode):
     logger.debug("qrCallback: {} {} {}".format(uuid, status, qrcode))
     if status == "0":
-        try:
-            from PIL import Image
+        import sys
+        import platform
+        if sys.platform.startswith('linux'):
+            logger.info('当前系统为 Linux')
+        elif sys.platform.startswith('win'):
+            logger.info('当前系统为 Windows')
 
-            img = Image.open(io.BytesIO(qrcode))
-            _thread = threading.Thread(target=img.show, args=("QRCode",))  # 定义显示图片的线程任务
-            _thread.setDaemon(True)
-            _thread.start()
-        except Exception as e:
-            pass
+            # 显示二维码图片（容器、虚拟机或者边缘计算终端启动时避免调用——或者说linux系统下不调用以下部分）
+            try:
+                from PIL import Image
+                
+                img = Image.open(io.BytesIO(qrcode))
+                _thread = threading.Thread(target=img.show, args=("QRCode",))  # 定义显示图片的线程任务
+                _thread.setDaemon(True)
+                _thread.start()
+            except Exception as e:
+                pass
+        elif sys.platform.startswith('darwin'):
+            logger.info('当前系统为 macOS')
+        else:
+            logger.info('无法识别当前系统')
 
         import qrcode
 
@@ -103,9 +115,9 @@ def qrCallback(uuid, status, qrcode):
         print(qr_api1)
 
         # 输出登录二维码到终端界面
-        qr = qrcode.QRCode(border=1)
-        qr.add_data(url)
-        qr.make(fit=True)
+        # qr = qrcode.QRCode(border=1)
+        # qr.add_data(url)
+        # qr.make(fit=True)
         # qr.print_ascii(invert=True)
 
         # 1.发送登录二维码请求及设备id（utility/mac_derive.py）到后台（http post）--->用户需要手机微信扫码登录，不能长按识别，如何解决？？？
