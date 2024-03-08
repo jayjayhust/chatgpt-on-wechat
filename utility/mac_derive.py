@@ -66,5 +66,6 @@ class mac_derive(object):
                     if '-' in address and len(address)==17:
                         print(address)  # 输出形如：B0-25-AA-4C-55-AC
                         return address
-        return None
+        # return None
+        return "00-00-00-00-00-00"
 
