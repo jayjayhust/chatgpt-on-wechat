@@ -287,6 +287,20 @@ class Core(object):
             it is defined in components/contact.py
         '''
         raise NotImplementedError()
+    def send_sharing(self, url, toUserName):
+        ''' many messages are sent in a common way
+            for demo
+                .. code:: python
+
+                    @itchat.msg_register(itchat.content.CARD)
+                    def reply(msg):
+                        itchat.send_sharing(msg['Content'], msg['FromUserName'])
+
+            there are some little tricks here, you may discover them yourself
+            but remember they are tricks
+            it is defined in components/messages.py
+        '''
+        raise NotImplementedError()
     def send_raw_msg(self, msgType, content, toUserName):
         ''' many messages are sent in a common way
             for demo

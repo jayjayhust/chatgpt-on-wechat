@@ -9,6 +9,8 @@ from config import conf
 import datetime
 import time
 
+from bridge.context import *
+
 class mqtt_client(object):
     
     # 类的实例化（初始化）
@@ -34,6 +36,7 @@ class mqtt_client(object):
         # 订阅相关主题
         client.subscribe("/sys/config/push")  # 服务器配置下发
         client.subscribe("/sys/config/get_reply")  # 微信端配置查询回复
+        client.subscribe("/sys/message/push")  # 服务器消息下发
 
         # 等待订阅生效
         time.sleep(3)
@@ -113,15 +116,19 @@ class mqtt_client(object):
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
 
-                if 'vectordbName' in record:
+                if 'vectordbName' in record and (record['vectordbName'] != ''):
                     logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
                     logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
                     group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
-                    if chat_group_name not in group_chat_using_private_vector_db:  # 群名不在白名单中，则新增向量库配置
-                        group_chat_using_private_vector_db[chat_group_name] = {'vectordbName': record['vectordbName'], 'vectordbCollection': record['vectordbCollection']}
-                    else:  # 群名在白名单中，则更新向量库配置
-                        group_chat_using_private_vector_db[chat_group_name]['vectordbName'] = record['vectordbName']
-                        group_chat_using_private_vector_db[chat_group_name]['vectordbCollection'] = record['vectordbCollection']
+                    chat_group_name_exist = False
+                    for vector_db_config in group_chat_using_private_vector_db:  # 遍历白名单中的群名
+                        if chat_group_name in vector_db_config:  # 群名存在
+                            vector_db_config[chat_group_name]['database'] = record['vectordbName']
+                            vector_db_config[chat_group_name]['collection'] = record['vectordbCollection']
+                            chat_group_name_exist = True
+                            break
+                    if not chat_group_name_exist:  # 群名不在白名单中，则新增向量库配置
+                        group_chat_using_private_vector_db.append({chat_group_name: {'database': record['vectordbName'], 'collection': record['vectordbCollection']}})
                     conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
@@ -155,6 +162,23 @@ class mqtt_client(object):
                         if chat_group_name not in group_image_process_white_list:
                             group_image_process_white_list.append(chat_group_name)
                         conf().set("group_image_process_white_list", group_image_process_white_list)  # 更新到全局配置文件
+                        pass
+        elif msg.topic == f"/sys/message/push":  # 服务器消息下发
+            data = json.loads(str(msg.payload.decode('utf-8')))  # 字符串转字典
+            msgId = data['msgId']
+            botId = data['botId']  # 机器人ID
+            if botId != self.bot_id:  # 不是发给自己的消息，忽略
+                return
+            from lib import itchat
+            for record in data['data']:
+                chat_group_name = record['chatGroupName']
+                msg_type = record['msgType']  # 消息类型：TEXT/IMAGE/VIDEO/FILE/SHARING/OTHER
+                msg = record['msg']  # 消息内容
+                logger.debug('/sys/message/push主题消息收到！群名:' + chat_group_name)  # chatGroupName: 群名
+                target_rooms = itchat.search_chatrooms(name=chat_group_name)
+                if len(target_rooms) > 0:  # 群名存在
+                    if msg_type == 'SHARING':  # 文本消息
+                        itchat.send_sharing(url=msg, toUserName=chat_group_name)
                         pass
         
     # 订阅回调

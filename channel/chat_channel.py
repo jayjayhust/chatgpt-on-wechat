@@ -50,6 +50,12 @@ class ChatChannel(Channel):
         self.text_abstract_inst = text_abstract()
         self.image_to_text_inst = image_to_text()
         self.greeting_group_status = {}
+        self.group_daily_message_counter_list = {}  # 群每日阿图问答消息计数器字典
+        group_daily_message_counter_limit = conf().get("group_daily_message_counter_limit", {})
+        if len(group_daily_message_counter_limit) > 0:
+            for key in group_daily_message_counter_limit:
+                self.group_daily_message_counter_list[key] = 0
+        self.group_daily_message_counter_list_clear_flag = False  # 群每日阿图问答消息计数器标志
         group_daily_message_white_list = conf().get("group_daily_message_white_list", [])
         if len(group_daily_message_white_list) > 0:
             for group_name in group_daily_message_white_list:
@@ -313,6 +319,33 @@ class ChatChannel(Channel):
         if not e_context.is_pass():
             logger.debug("[WX] ready to handle context: type={}, content={}".format(context.type, context.content))
             if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字消息和创建图片的消息
+                # 群聊次数限制的处理逻辑加到这里
+                if context.get("isgroup", False):  # 群聊
+                    # 群聊消息次数限制
+                    group_chat_name = context["msg"].other_user_nickname
+                    if group_chat_name in self.group_daily_message_counter_list:
+                        group_daily_message_counter_limit = conf().get("group_daily_message_counter_limit", {})
+                        if self.group_daily_message_counter_list[group_chat_name] >= group_daily_message_counter_limit[group_chat_name]: 
+                            logger.info("[WX]group daily message counter limit reached, skip this message")
+                            # contruct a reply to tell the user that the message is skipped
+                            from bridge.reply import Reply
+                            reply = Reply()
+                            reply.type = ReplyType.TEXT
+                            # reply.content = "消息发送频率过快，请稍后再试。"
+                            # reply.content = "本群是我们共同交流基层治理经验的温馨小窝。我们特地引入AI群助手（阿图），就是希望能给大家带来更多科技的乐趣，" + \
+                            #     "同时更深入地参与基层治理的探讨。不过今天阿图和大家智聊对话的机会已经满了（20条），明天还请早点来和阿图交流吧！当然，" + \
+                            #     "如果您觉得和阿图的对话非常有趣且有帮助，也可以考虑将阿图邀请到您自己的群聊中，那样智聊对话就不受条数限制了，交流起来会更加便捷哦！" + \
+                            #     "期待与您共同学习、共同进步！"
+                            reply.content = "本群是交流基层治理经验的温馨小窝。我们引入了AI群助手（阿图），希望为大家带来科技的乐趣，深入参与基层治理探讨。\n\n"+ \
+                                "今天阿图智聊对话的机会已经满了（20条），明天还请早点来和阿图交流！\n\n" + \
+                                "如果您觉得和阿图的对话有帮助，可以将阿图邀请到自己的群聊中，智聊对话不限条数，交流起来会更加便捷！\n\n" + \
+                                "期待与您共同学习、进步！"
+                            return reply
+                        else:
+                            self.group_daily_message_counter_list[group_chat_name] = self.group_daily_message_counter_list[group_chat_name] + 1
+                            pass
+                    else:
+                        pass
                 reply = super().build_reply_content(context.content, context)  # 回复消息，也会被自己接收，所以不用特意在这里发送MQTT消息给记录服务器         
             elif context.type == ContextType.VOICE:  # 语音消息
                 cmsg = context["msg"]
@@ -355,7 +388,7 @@ class ChatChannel(Channel):
 
                 if reply.type == ReplyType.TEXT:
                     new_context = self._compose_context(ContextType.TEXT, reply.content, **context.kwargs)
-                    if new_context:
+                    if new_context:  # 产生新的回复消息，并递归处理
                         reply = self._generate_reply(new_context)
                     else:
                         return
@@ -507,6 +540,7 @@ class ChatChannel(Channel):
                 return
         return reply
 
+    # 回复消息的装饰（例如添加@用户等信息）
     def _decorate_reply(self, context: Context, reply: Reply) -> Reply:
         if reply and reply.type:
             e_context = PluginManager().emit_event(
@@ -733,6 +767,19 @@ class ChatChannel(Channel):
                     elif target_rooms and len(target_rooms) > 0 and ("00:00:00" <= current_time < "00:59:59"):  # 设定群消息已群发记录的清零时间范围
                         self.greeting_group_status[group_name] = False
 
+            # 暂时把阿图问答的群聊计数器清零逻辑放到这里，后面尽量改到另外一个线程
+            group_daily_message_counter = conf().get("group_daily_message_counter", {})
+            if len(group_daily_message_counter) > 0:
+                if ("00:00:00" <= current_time < "00:59:59") and self.group_daily_message_counter_list_clear_flag == False:  # 设定触发时间范围
+                    for key in group_daily_message_counter:
+                        # group_daily_message_counter[key] = 0  # 群聊计数器清零
+                        self.group_daily_message_counter_list[key] = 0  # 群聊计数器清零
+                    self.group_daily_message_counter_list_clear_flag = True  # 群聊计数器标记清零逻辑已执行
+                    logger.debug("group_daily_message_counter clear flag set to True!")
+                elif self.group_daily_message_counter_list_clear_flag == True:  # 群聊计数器标记清零逻辑已执行
+                    self.group_daily_message_counter_list_clear_flag = False  # 群聊计数器标记清零逻辑复位
+                    logger.debug("group_daily_message_counter clear flag set to False!")
+                
             time.sleep(120)  # 休眠120秒
 
 def check_prefix(content, prefix_list):

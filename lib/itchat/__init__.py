@@ -73,6 +73,7 @@ set_chatroom_name           = instance.set_chatroom_name
 delete_member_from_chatroom = instance.delete_member_from_chatroom
 add_member_into_chatroom    = instance.add_member_into_chatroom
 # components.messages
+send_sharing                = instance.send_sharing
 send_raw_msg                = instance.send_raw_msg
 send_msg                    = instance.send_msg
 upload_file                 = instance.upload_file

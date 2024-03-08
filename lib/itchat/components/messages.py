@@ -14,6 +14,7 @@ from .contact import update_local_uin
 logger = logging.getLogger('itchat')
 
 def load_messages(core):
+    core.send_sharing = send_sharing
     core.send_raw_msg = send_raw_msg
     core.send_msg     = send_msg
     core.upload_file  = upload_file
@@ -259,6 +260,25 @@ def produce_group_chat(core, msg):
     msg['ActualUserName'] = actualUserName
     msg['Content']        = content
     utils.msg_formatter(msg, 'Content')
+
+# add by jay@20240307 for sending sharing link
+def send_sharing(self, url, toUserName):
+    url = '%s/webwxsendmsg' % self.loginInfo['url']
+    data = {
+        'BaseRequest': self.loginInfo['BaseRequest'],
+        'Msg': {
+            'Type': 30,
+            'Content': url,
+            'FromUserName': self.storageClass.userName,
+            'ToUserName': (toUserName if toUserName else self.storageClass.userName),
+            'LocalID': int(time.time() * 1e4),
+            'ClientMsgId': int(time.time() * 1e4),
+            },
+        'Scene': 0, }
+    headers = { 'ContentType': 'application/json; charset=UTF-8', 'User-Agent' : config.USER_AGENT }
+    r = self.s.post(url, headers=headers,
+        data=json.dumps(data, ensure_ascii=False).encode('utf8'))
+    return ReturnValue(rawResponse=r)
 
 def send_raw_msg(self, msgType, content, toUserName):
     url = '%s/webwxsendmsg' % self.loginInfo['url']

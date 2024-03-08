@@ -210,7 +210,7 @@ class BaiduErnieSessionBot(Bot, ZhipuAIImage):
                 return reply
             
              # 判断是否开启群的向量数据库
-            prompt = query
+            prompt = query  # 初始化prompt
             chosen_text = []
             is_group_chat_using_private_db = False
             if self.use_vector_db and is_group_chat:  # 加载向量数据库（群聊）
@@ -234,12 +234,13 @@ class BaiduErnieSessionBot(Bot, ZhipuAIImage):
                             i += 1
                             if match['score'] > 0.80:  # RAG的分数阈值
                                 # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
-                                chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
+                                # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
                                 # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
-                        prompt = construct_prompt(query, chosen_text)
+                                chosen_text.append('标题：' + match['articleTitle'] + ', 详情：' + match['segment'])
+                        prompt = construct_prompt(query, chosen_text)  # 构建prompt
             else:
                 # 不加载向量数据库
-                prompt = query
+                prompt = query  # 初始化prompt
             logger.debug(prompt)
             
             session = self.sessions.session_query(prompt, session_id)

@@ -53,6 +53,8 @@ available_setting = {
     "group_attachment_process_white_list": ["阿图巴巴奥力给"],  # 文件处理群聊白名单
     "group_attachment_file_size_in_mb": 5,  # 下载文件大小限制（单位MB）
     "group_web_search_white_list": ["阿图巴巴奥力给"],  # 开启bing search群聊白名单
+    "group_daily_message_counter_limit": {"阿图巴巴测试群1": 10},  # 阿图问答每日群聊限制次数
+    "group_daily_message_counter": {"阿图巴巴测试群1": 0},  # 阿图问答每日群聊计数器
     "bing_search_subscription_key": "",  # bing search subscription key
     "bing_search_endpoint": "https://api.bing.microsoft.com/v7.0/search",  # bing search endpoint
     "serpapi_search_subscription_key": "",  # serpapi search subscription key

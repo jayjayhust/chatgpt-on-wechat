@@ -1,5 +1,6 @@
 # 选择基于pyhon基础镜像（https://hub.docker.com/上搜索镜像）
-FROM python:3.10
+# FROM python:3.10
+FROM python:3.10:slim
 # 为后续的RUN、CMD、ENTRYPOINT指定工作目录
 WORKDIR /app
 # 复制所有文件到镜像

@@ -123,14 +123,7 @@ def qrCallback(uuid, status, qrcode):
         # 1.发送登录二维码请求及设备id（utility/mac_derive.py）到后台（http post）--->用户需要手机微信扫码登录，不能长按识别，如何解决？？？
         # 解决办法（给auto_login方法传入值为真的hotReload）：https://www.cnblogs.com/Rain2017/p/11401189.html
         # 2.登录完成后，还要把登录账号信息（微信昵称，微信id）及设备id也发送到后台（http post）
-        # (此处代码待完善)
-        mac_derive_inst = mac_derive()
-        wlan_mac = mac_derive_inst.get_wlan_mac()
-        if wlan_mac != None:
-            logger.info("wlan_mac: {}".format(wlan_mac))
-        else:
-            logger.info("wlan_mac is not available")
-        conf().set("bot_id", wlan_mac)  # 更新到全局配置文件
+        wlan_mac = conf().get("bot_id", "bot")  # 获取设备id
         # 传输登录二维码到管理后台（mqtt）
         WechatChannel().send_login_qrcode(url, bot_uid=wlan_mac)
 
@@ -144,6 +137,15 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
         super().__init__()
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)  # 1天内的消息不重复处理
         self.bot_id = conf().get("bot_id", "bot")
+
+        # 获取设备 id （这里用网卡 mac 地址来作为设备id）
+        mac_derive_inst = mac_derive()
+        wlan_mac = mac_derive_inst.get_wlan_mac()
+        if wlan_mac != None:
+            logger.info("wlan_mac: {}".format(wlan_mac))
+        else:
+            logger.info("wlan_mac is not available")
+        conf().set("bot_id", wlan_mac)  # 更新到全局配置文件
 
     def startup(self):
         itchat.instance.receivingRetryCount = 600  # 修改断线超时时间
