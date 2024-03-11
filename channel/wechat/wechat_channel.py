@@ -176,12 +176,6 @@ class WechatChannel(ChatChannel):  # 继承了ChatChannel(chat_channel.py)
         logger.info("Wechat login success, user_id: {}, nickname: {}".format(self.user_id, self.name))
         # 登录完成后，把登录账号信息（微信昵称，微信id）及设备id也发送到后台（http post）
         # (此处代码待完善)
-        mac_derive_inst = mac_derive()
-        wlan_mac = mac_derive_inst.get_wlan_mac()
-        if wlan_mac != None:
-            logger.info("wlan_mac: {}".format(wlan_mac))
-        else:
-            logger.info("wlan_mac is not available")
 
         # start message listener
         itchat.run()

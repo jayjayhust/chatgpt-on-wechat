@@ -70,12 +70,46 @@ class mac_derive(object):
         # return None
         return "00-00-00-00-00-00"
     
-    # 获取有线网卡MAC地址
+    # 获取以太网卡MAC地址
     def get_ethernet_mac(self):
         for k, v in net_if_addrs().items():
             logger.debug('*' * 100)
             logger.debug(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
-            if k in ["以太网"]:  # 类型为无线网卡
+            if k in ["以太网"]:  # 类型为以太网卡
+                for item in v:
+                    address = item[1]
+                    if '-' in address and len(address)==17:
+                        logger.debug(address)  # 输出形如：B0-25-AA-4C-55-AC
+                        return address
+        # return None
+        return "00-00-00-00-00-00"
+    
+    # 获取无线网卡MAC地址
+    def get_wlan_mac(self):
+        for k, v in net_if_addrs().items():
+            logger.debug('*' * 100)
+            logger.debug(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
+            if k in ["WLAN"]:  # 类型为无线网卡
+                for item in v:
+                    address = item[1]
+                    if '-' in address and len(address)==17:
+                        logger.debug(address)  # 输出形如：B0-25-AA-4C-55-AC
+                        return address
+        # return None
+        return "00-00-00-00-00-00"
+    
+    # 获取以太/无线网卡MAC地址
+    def get_available_mac(self):
+        for k, v in net_if_addrs().items():
+            logger.debug('*' * 100)
+            logger.debug(k)  # 输出形如：以太网/vEthernet (Default Switch)/本地连接* 1/VMware Network Adapter VMnet1/WLAN/Loopback Pseudo-Interface 1
+            if k in ["以太网"]:  # 类型为以太网卡
+                for item in v:
+                    address = item[1]
+                    if '-' in address and len(address)==17:
+                        logger.debug(address)  # 输出形如：B0-25-AA-4C-55-AC
+                        return address
+            elif k in ["WLAN"]:  # 类型为无线网卡
                 for item in v:
                     address = item[1]
                     if '-' in address and len(address)==17:
