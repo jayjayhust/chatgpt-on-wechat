@@ -774,12 +774,12 @@ class ChatChannel(Channel):
             # 暂时把阿图问答的群聊计数器清零逻辑放到这里，后面尽量改到另外一个线程
             group_daily_message_counter_limit = conf().get("group_daily_message_counter_limit", {})
             if len(group_daily_message_counter_limit) > 0:
-                if ("00:00:00" <= current_time < "00:59:59") and self.group_daily_message_counter_list_clear_flag == False:  # 设定触发时间范围
-                    for key in group_daily_message_counter_limit:
-                        # group_daily_message_counter[key] = 0  # 群聊计数器清零
-                        self.group_daily_message_counter_list[key] = 0  # 群聊计数器清零
-                    self.group_daily_message_counter_list_clear_flag = True  # 群聊计数器标记清零逻辑已执行
-                    logger.debug("group_daily_message_counter clear flag set to True!")
+                if ("00:00:00" <= current_time < "00:59:59"):  # 设定触发时间范围
+                    if self.group_daily_message_counter_list_clear_flag == False:
+                        for key in group_daily_message_counter_limit:
+                            self.group_daily_message_counter_list[key] = 0  # 群聊计数器清零
+                        self.group_daily_message_counter_list_clear_flag = True  # 标记群聊计数器标记清零逻辑
+                        logger.debug("group_daily_message_counter clear flag set to True!")
                 elif self.group_daily_message_counter_list_clear_flag == True:  # 群聊计数器标记清零逻辑已执行
                     self.group_daily_message_counter_list_clear_flag = False  # 群聊计数器标记清零逻辑复位
                     logger.debug("group_daily_message_counter clear flag set to False!")
