@@ -60,15 +60,19 @@ class mqtt_client(object):
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
                 
-                if 'vectordbName' in record:
+                if 'vectordbName' in record and (record['vectordbName'] != ''):
                     logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
                     logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
                     group_chat_using_private_vector_db = conf().get("group_chat_using_private_vector_db", [])
-                    if chat_group_name not in group_chat_using_private_vector_db:  # 群名不在白名单中，则新增向量库配置
-                        group_chat_using_private_vector_db[chat_group_name] = {'vectordbName': record['vectordbName'], 'vectordbCollection': record['vectordbCollection']}
-                    else:  # 群名在白名单中，则更新向量库配置
-                        group_chat_using_private_vector_db[chat_group_name]['vectordbName'] = record['vectordbName']
-                        group_chat_using_private_vector_db[chat_group_name]['vectordbCollection'] = record['vectordbCollection']
+                    chat_group_name_exist = False
+                    for vector_db_config in group_chat_using_private_vector_db:  # 遍历白名单中的群名
+                        if chat_group_name in vector_db_config:  # 群名存在
+                            vector_db_config[chat_group_name]['database'] = record['vectordbName']
+                            vector_db_config[chat_group_name]['collection'] = record['vectordbCollection']
+                            chat_group_name_exist = True
+                            break
+                    if not chat_group_name_exist:  # 群名不在白名单中，则新增向量库配置
+                        group_chat_using_private_vector_db.append({chat_group_name: {'database': record['vectordbName'], 'collection': record['vectordbCollection']}})
                     conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
