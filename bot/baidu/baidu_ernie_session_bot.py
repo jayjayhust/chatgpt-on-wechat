@@ -134,7 +134,10 @@ def search_docs(query_prompt, query_database, query_collection):
 
     documents = search_by_text_res.get('documents')
 
-    return documents[0]
+    if documents is None:
+        return None
+    else:
+        return documents[0]
 
 ### Construct Prompt
 def construct_prompt(query, chosen_text):
@@ -230,13 +233,16 @@ class BaiduErnieSessionBot(Bot, ZhipuAIImage):
                         # 在这里重组query(加载向量数据库pinecone专家库，先进行专家库检索)
                         matches = search_docs(query, group_chat_vector_db_confg[group_chat_name]["database"], group_chat_vector_db_confg[group_chat_name]["collection"])
                         i = 0
-                        for match in matches:
-                            i += 1
-                            if match['score'] > 0.80:  # RAG的分数阈值
-                                # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
-                                # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
-                                # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
-                                chosen_text.append('问题/主题：' + match['articleTitle'] + ', 答案/简介：' + match['text'] + ', 详情/补充：' + match['segment'])
+                        if matches is None:
+                            chosen_text.append('阿图智库中暂时没有这块知识，请自行搜索。')
+                        else:
+                            for match in matches:
+                                i += 1
+                                if match['score'] > 0.80:  # RAG的分数阈值
+                                    # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
+                                    # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
+                                    # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
+                                    chosen_text.append('问题/主题：' + match['articleTitle'] + ', 答案/简介：' + match['text'] + ', 详情/补充：' + match['segment'])
                         prompt = construct_prompt(query, chosen_text)  # 构建prompt
             else:
                 # 不加载向量数据库

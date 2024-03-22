@@ -30,8 +30,14 @@ class Session(object):
         self.reset()
 
     def add_query(self, query):
-        user_item = {"role": "user", "content": query}
-        self.messages.append(user_item)
+        # 这里在欢迎大量新进群的用户时，会出现前一个用户还未回复的情况，下一个用户的query就被添加进session的messages列表中
+        # 所以要判断一下当前session的messages列表中最后一个元素的role是否是"user"，如果是，则replace掉它
+        if len(self.messages) > 0 and self.messages[-1]["role"] == "user":
+            self.messages[-1] = {"role": "user", "content": query}
+        else:
+            # 否则，直接添加一个新的user_item
+            user_item = {"role": "user", "content": query}  
+            self.messages.append(user_item)
 
     def add_reply(self, reply):
         assistant_item = {"role": "assistant", "content": reply}
@@ -72,7 +78,7 @@ class SessionManager(object):
     # 更新对应session_id下保存聊天记录的会话
     def session_query(self, query, session_id):
         session = self.build_session(session_id)
-        session.add_query(query)
+        session.add_query(query)  # 保存聊天记录的会话
         try:
             max_tokens = conf().get("conversation_max_tokens", 1000)
             total_tokens = session.discard_exceeding(max_tokens, None)  # 去除超长的历史聊天记录部分
