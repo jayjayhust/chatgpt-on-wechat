@@ -137,7 +137,10 @@ def search_docs(query_prompt, query_database, query_collection):
     if documents is None:
         return None
     else:
-        return documents[0]
+        if len(documents) == 0:
+            return None
+        else:
+            return documents[0]
 
 ### Construct Prompt
 def construct_prompt(query, chosen_text):
