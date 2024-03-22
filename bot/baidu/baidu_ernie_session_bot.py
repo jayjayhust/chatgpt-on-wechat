@@ -236,7 +236,7 @@ class BaiduErnieSessionBot(Bot, ZhipuAIImage):
                                 # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'])
                                 # chosen_text.append('文章标题：' + match['articleTitle'] + ', 链接：' + match['url'] + ', 来源：' + match['dataSourceName'])
                                 # chosen_text.append(str(i) + "." + match['articleTitle'] + ':' + match['url'])
-                                chosen_text.append('标题：' + match['articleTitle'] + ', 详情：' + match['segment'])
+                                chosen_text.append('问题/主题：' + match['articleTitle'] + ', 答案/简介：' + match['text'] + ', 详情/补充：' + match['segment'])
                         prompt = construct_prompt(query, chosen_text)  # 构建prompt
             else:
                 # 不加载向量数据库
