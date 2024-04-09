@@ -60,6 +60,7 @@ class mqtt_client(object):
                 logger.debug('群名:' + record['chatGroupName'])  # chatGroupName: 群名
                 chat_group_name = record['chatGroupName']
                 
+                # 更新群聊对应的向量数据库配置
                 if 'vectordbName' in record and (record['vectordbName'] != ''):
                     logger.debug('向量库名:' + record['vectordbName'])  # vectordbName: 向量库名
                     logger.debug('向量表名:' + record['vectordbCollection'])  # vectordbCollection: 向量表名
@@ -74,6 +75,20 @@ class mqtt_client(object):
                     if not chat_group_name_exist:  # 群名不在白名单中，则新增向量库配置
                         group_chat_using_private_vector_db.append({chat_group_name: {'database': record['vectordbName'], 'collection': record['vectordbCollection']}})
                     conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
+
+                # 更新群聊欢迎语
+                if 'welcomeMessage' in record and (record['welcomeMessage'] != '') and len(record['welcomeMessage']) > 0:
+                    logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + record['welcomeMessage'][0]['value'])
+                    user_specified_guidance = conf().get("user_specified_guidance", [])
+                    chat_group_name_exist = False
+                    for user_specified_guidance_config in user_specified_guidance:  # 遍历白名单中的群名
+                        if chat_group_name in user_specified_guidance_config:  # 群名存在
+                            user_specified_guidance_config[chat_group_name] = record['welcomeMessage'][0]['value']
+                            chat_group_name_exist = True
+                            break
+                    if not chat_group_name_exist:  # 群名不在白名单中，则新增欢迎语配置
+                        user_specified_guidance.append({chat_group_name: record['welcomeMessage'][0]['value']})
+                    conf().set("user_specified_guidance", user_specified_guidance)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
@@ -134,6 +149,20 @@ class mqtt_client(object):
                     if not chat_group_name_exist:  # 群名不在白名单中，则新增向量库配置
                         group_chat_using_private_vector_db.append({chat_group_name: {'database': record['vectordbName'], 'collection': record['vectordbCollection']}})
                     conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
+
+                # 更新群聊欢迎语
+                if 'welcomeMessage' in record and (record['welcomeMessage'] != '') and len(record['welcomeMessage']) > 0:
+                    logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + record['welcomeMessage'][0]['value'])
+                    user_specified_guidance = conf().get("user_specified_guidance", [])
+                    chat_group_name_exist = False
+                    for user_specified_guidance_config in user_specified_guidance:  # 遍历白名单中的群名
+                        if chat_group_name in user_specified_guidance_config:  # 群名存在
+                            user_specified_guidance_config[chat_group_name] = record['welcomeMessage'][0]['value']
+                            chat_group_name_exist = True
+                            break
+                    if not chat_group_name_exist:  # 群名不在白名单中，则新增欢迎语配置
+                        user_specified_guidance.append({chat_group_name: record['welcomeMessage'][0]['value']})
+                    conf().set("user_specified_guidance", user_specified_guidance)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
