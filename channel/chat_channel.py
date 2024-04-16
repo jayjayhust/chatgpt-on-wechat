@@ -526,7 +526,6 @@ class ChatChannel(Channel):
                         is_user_specified_guidance = True
                         user_guidance = user_specified_guidance_config[group_chat_name]
                         
-                        reply = Reply()
                         reply.type = ReplyType.TEXT
                         msg: ChatMessage = e_context["context"]["msg"]
                         if e_context["context"]["isgroup"]:
