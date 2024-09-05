@@ -78,19 +78,25 @@ class mqtt_client(object):
 
                 # 更新群聊欢迎语
                 if 'welcomeMessage' in record and (record['welcomeMessage'] != '') and len(record['welcomeMessage']) > 0:
-                    logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + record['welcomeMessage'][0]['value'])
-                    user_specified_guidance = conf().get("user_specified_guidance", [])
-                    chat_group_name_exist = False
-                    for user_specified_guidance_config in user_specified_guidance:  # 遍历白名单中的群名
-                        if chat_group_name in user_specified_guidance_config:  # 群名存在
-                            user_specified_guidance_config[chat_group_name] = record['welcomeMessage'][0]['value']
-                            chat_group_name_exist = True
-                            break
-                    if not chat_group_name_exist:  # 群名不在白名单中，则新增欢迎语配置
-                        user_specified_guidance.append({chat_group_name: record['welcomeMessage'][0]['value']})
-                    conf().set("user_specified_guidance", user_specified_guidance)  # 更新到全局配置文件
+                    welcome_messages = []
+                    if len(record['welcomeMessage']) > 0:
+                        for welcome_message in record['welcomeMessage']:
+                            welcome_messages.append(welcome_message['value'])
+                        logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + str(welcome_messages))
+                        user_specified_guidance = conf().get("user_specified_guidance", [])
+                        chat_group_name_exist = False
+                        for user_specified_guidance_config in user_specified_guidance:  # 遍历白名单中的群名
+                            if chat_group_name in user_specified_guidance_config:  # 群名存在
+                                user_specified_guidance_config[chat_group_name] = welcome_messages
+                                chat_group_name_exist = True
+                                break
+                        if not chat_group_name_exist:  # 群名不在白名单中，则新增欢迎语配置
+                            user_specified_guidance.append({chat_group_name: welcome_messages})
+                        conf().set("user_specified_guidance", user_specified_guidance)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
+                    if len(role) < 1:
+                        continue
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
                     if role['key'] == '0':  # 阿图智聊
                         group_name_white_list = conf().get("group_name_white_list", [])
@@ -151,20 +157,25 @@ class mqtt_client(object):
                     conf().set("group_chat_using_private_vector_db", group_chat_using_private_vector_db)  # 更新到全局配置文件
 
                 # 更新群聊欢迎语
+                welcome_messages = []
                 if 'welcomeMessage' in record and (record['welcomeMessage'] != '') and len(record['welcomeMessage']) > 0:
-                    logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + record['welcomeMessage'][0]['value'])
+                    for welcome_message in record['welcomeMessage']:
+                        welcome_messages.append(welcome_message['value'])
+                    logger.debug('群聊' + chat_group_name + '指定的欢迎语:' + str(welcome_messages))
                     user_specified_guidance = conf().get("user_specified_guidance", [])
                     chat_group_name_exist = False
                     for user_specified_guidance_config in user_specified_guidance:  # 遍历白名单中的群名
                         if chat_group_name in user_specified_guidance_config:  # 群名存在
-                            user_specified_guidance_config[chat_group_name] = record['welcomeMessage'][0]['value']
+                            user_specified_guidance_config[chat_group_name] = welcome_messages
                             chat_group_name_exist = True
                             break
                     if not chat_group_name_exist:  # 群名不在白名单中，则新增欢迎语配置
-                        user_specified_guidance.append({chat_group_name: record['welcomeMessage'][0]['value']})
+                        user_specified_guidance.append({chat_group_name: welcome_messages})
                     conf().set("user_specified_guidance", user_specified_guidance)  # 更新到全局配置文件
 
                 for role in record['role']:  # key: 0阿图智聊/1推文摘要/2图片储存/3搜索功能/4图片识别
+                    if len(role) < 1:
+                        continue
                     # logger.debug('功能:' + role['name'] + ':' + role['key'])
                     if role['key'] == '0':  # 阿图智聊
                         group_name_white_list = conf().get("group_name_white_list", [])

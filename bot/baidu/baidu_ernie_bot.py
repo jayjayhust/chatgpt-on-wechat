@@ -15,32 +15,33 @@ import pinecone  # pip install pinecone-client python-docx plotly scikit-learn
 import os
 from common.log import logger
 
-### init pinecone configuration
-pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
-pinecone.init(
-    # api_key="pinecone api key",
-    api_key=pinecone_api_key,
-    environment="eu-west1-gcp"
-)
+# ### init pinecone configuration
+# pinecone_api_key = conf().get("pinecone_api_key") or os.environ.get('PINECONE_API_KEY')
+# pinecone.init(
+#     # api_key="pinecone api key",
+#     api_key=pinecone_api_key,
+#     environment="eu-west1-gcp"
+# )
 
-# create or connect to index
-index_name = "holon-expert-2023-0509"
-if index_name not in pinecone.list_indexes():
-    pinecone.create_index(index_name, dimension=1536)
-    logger.debug("pinecone index created!")
+# # create or connect to index
+# index_name = "holon-expert-2023-0509"
+# if index_name not in pinecone.list_indexes():
+#     pinecone.create_index(index_name, dimension=1536)
+#     logger.debug("pinecone index created!")
 
-# connect to index(this operation shall take a while)
-index = pinecone.Index(index_name)
-logger.debug("pinecone index connected!")
+# # connect to index(this operation shall take a while)
+# index = pinecone.Index(index_name)
+# logger.debug("pinecone index connected!")
 
 ### Query Index
 def search_docs(query):
-    xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
-    res = index.query([xq], top_k=5, include_metadata=True)
-    chosen_text = []
-    for match in res['matches']:
-        chosen_text = match['metadata']
-    return res['matches']
+    # xq = openai.Embedding.create(input=query, engine="text-embedding-ada-002")['data'][0]['embedding']
+    # res = index.query([xq], top_k=5, include_metadata=True)
+    # chosen_text = []
+    # for match in res['matches']:
+    #     chosen_text = match['metadata']
+    # return res['matches']
+    return []
 
 
 ### Construct Prompt

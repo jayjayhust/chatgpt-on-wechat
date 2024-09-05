@@ -5,6 +5,7 @@ import threading
 import time
 from asyncio import CancelledError
 from concurrent.futures import Future, ThreadPoolExecutor
+import random
 
 from bridge.context import *
 from bridge.reply import *
@@ -525,11 +526,16 @@ class ChatChannel(Channel):
                     if group_chat_name in user_specified_guidance_config.keys():  # 该群聊开启了订制的新进群用户欢迎小贴士
                         is_user_specified_guidance = True
                         user_guidance = user_specified_guidance_config[group_chat_name]
+                        user_guidance_text = ""
+                        if len(user_guidance) > 1:
+                            user_guidance_text = random.choice(user_guidance)
+                        else:
+                            user_guidance_text = user_guidance[0]
                         
                         reply.type = ReplyType.TEXT
                         msg: ChatMessage = e_context["context"]["msg"]
                         if e_context["context"]["isgroup"]:
-                            reply.content = f"你好，{msg.actual_user_nickname}！" + user_guidance
+                            reply.content = f"你好，{msg.actual_user_nickname}！" + user_guidance_text
                         else:
                             reply.content = f"Hello, {msg.from_user_nickname}"
 
@@ -738,7 +744,7 @@ class ChatChannel(Channel):
                 dict1['bot_id'] = conf().get("bot_id")  # 机器人ID
                 dict1['bot_name'] = self.name
                 dict1['bot_status'] = str(bot_status)  # 状态
-                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{self.user_id}/heartbeat", json.dumps(dict1, ensure_ascii=False))
+                self.mqtt_client_inst.publish(f"/chatgpt/groupchat/{dict1['bot_id']}/heartbeat", json.dumps(dict1, ensure_ascii=False))
 
     # 发送群日推送，单独线程
     def send_greeting(self):
